@@ -38,7 +38,7 @@ export function ContactsSection({
       'TITLE:Отдел закупки неликвидов и оборудования',
       `TEL;TYPE=CELL:${rawTel}`,
       `URL:${config.telegramUrl}`,
-      `NOTE:${config.guaranteeText}. ${config.politeClosing}`,
+      `NOTE:${config.politeClosing}`,
       'END:VCARD',
     ].join('\r\n');
 
@@ -69,24 +69,23 @@ export function ContactsSection({
       {/* Main polite appeal & priority contact card */}
       <section className="lg:col-span-8 bg-white border border-slate-200 rounded-xl p-6 sm:p-8 flex flex-col justify-between">
         <div>
-          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md border border-[#16A34A]/30 bg-[#16A34A]/10 text-xs font-bold text-[#15803D] tabular-nums whitespace-nowrap">
-            <span className="h-2 w-2 rounded-[2px] bg-[#16A34A] shrink-0" />
-            <span>Прием и оценка заявок {config.schedule}</span>
-          </div>
+          <p className="text-xs sm:text-sm font-semibold text-slate-500">
+            Круглосуточная поддержка и прием заявок
+          </p>
 
-          <h1 className="mt-4 text-2xl sm:text-3xl font-extrabold text-[#0F172A] tracking-tight leading-snug break-words">
+          <h1 className="mt-2 text-2xl sm:text-3xl font-extrabold text-[#0F172A] tracking-tight leading-snug break-words">
             {config.politeClosing}
           </h1>
 
           <p className="mt-2.5 text-sm sm:text-base text-slate-600 leading-relaxed break-words">
-            {config.guaranteeText}. Вы можете направить перечень остатков, фотографии бирок или ведомость в мессенджер либо позвонить напрямую в удобное время.
+            Вы можете направить перечень остатков, фотографии бирок или ведомость в мессенджер либо позвонить напрямую в удобное время.
           </p>
 
           {/* Large phone number + Call & Copy buttons */}
           <div className="mt-6 p-5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 tabular-nums">
-                Прямой телефон ({config.schedule})
+              <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Прямой телефон
               </div>
               <a
                 href={config.phoneTel}
@@ -99,12 +98,10 @@ export function ContactsSection({
             <div className="flex flex-wrap items-center gap-2.5">
               <a
                 href={config.phoneTel}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-white hover:bg-slate-100 text-[#0F172A] border border-slate-200 px-5 text-sm font-bold tabular-nums whitespace-nowrap transition-colors"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-white hover:bg-slate-100 text-[#0F172A] border border-slate-200 px-5 text-sm font-bold whitespace-nowrap transition-colors"
               >
                 <Phone className="w-4 h-4 text-[#16A34A] shrink-0" aria-hidden="true" />
-                <span className="tabular-nums whitespace-nowrap">
-                  Позвонить {config.schedule}
-                </span>
+                <span className="whitespace-nowrap">Позвонить</span>
               </a>
 
               <button

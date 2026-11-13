@@ -20,6 +20,17 @@ import { AdminConfigDrawer } from './components/AdminConfigDrawer';
 
 const POSITIONS_STORAGE_KEY = 'b2b_selected_positions_v1';
 
+function isAdminHash(hash: string): boolean {
+  return hash.replace(/^#/, '').trim().toLowerCase() === 'admin';
+}
+
+function isInitialEditMode(): boolean {
+  return (
+    new URLSearchParams(window.location.search).get('edit') === '1' ||
+    isAdminHash(window.location.hash)
+  );
+}
+
 function parseHashToTab(hash: string): TabId {
   const normalized = hash.replace(/^#/, '').trim().toLowerCase();
   if (normalized === 'terms') return 'terms';
@@ -51,9 +62,7 @@ export function App(): React.JSX.Element {
   const [activeTab, setActiveTab] = useState<TabId>(() =>
     parseHashToTab(window.location.hash),
   );
-  const [isEditMode, setIsEditMode] = useState<boolean>(
-    () => new URLSearchParams(window.location.search).get('edit') === '1',
-  );
+  const [isEditMode, setIsEditMode] = useState<boolean>(isInitialEditMode);
   const [selectedPositions, setSelectedPositions] =
     useState<SelectedPosition[]>(loadInitialPositions);
   const [activeModalCategoryId, setActiveModalCategoryId] = useState<
@@ -88,7 +97,7 @@ export function App(): React.JSX.Element {
         JSON.stringify(selectedPositions),
       );
     } catch {
-      // Ignore storage quota / privacy mode errors
+      // Ignore storage errors
     }
   }, [selectedPositions]);
 
@@ -100,8 +109,15 @@ export function App(): React.JSX.Element {
     });
   }, [config.categories]);
 
+  // Sync SPA hash navigation + /#admin trigger
   useEffect(() => {
     const handleLocationSync = (): void => {
+      if (isAdminHash(window.location.hash)) {
+        setIsEditMode(true);
+        setActiveTab('main');
+        return;
+      }
+
       const nextTab = parseHashToTab(window.location.hash);
       setActiveTab((prev) => {
         if (prev !== nextTab) {
@@ -116,6 +132,28 @@ export function App(): React.JSX.Element {
     return () => {
       window.removeEventListener('hashchange', handleLocationSync);
       window.removeEventListener('popstate', handleLocationSync);
+    };
+  }, []);
+
+  // Keyboard shortcut Alt + E for editor panel
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent): void => {
+      if (
+        e.altKey &&
+        !e.ctrlKey &&
+        !e.metaKey &&
+        (e.code === 'KeyE' ||
+          e.key.toLowerCase() === 'e' ||
+          e.key.toLowerCase() === 'у')
+      ) {
+        e.preventDefault();
+        setIsEditMode((prev) => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
 
@@ -205,13 +243,18 @@ export function App(): React.JSX.Element {
   const handleExitEditMode = useCallback((): void => {
     setIsEditMode(false);
     const params = new URLSearchParams(window.location.search);
-    if (params.has('edit')) {
+    const hadEditParam = params.has('edit');
+    if (hadEditParam) {
       params.delete('edit');
+    }
+    const adminHashActive = isAdminHash(window.location.hash);
+    if (hadEditParam || adminHashActive) {
       const query = params.toString();
-      const nextUrl = `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`;
+      const targetHash = adminHashActive ? `#${activeTab}` : window.location.hash;
+      const nextUrl = `${window.location.pathname}${query ? `?${query}` : ''}${targetHash}`;
       window.history.replaceState(null, '', nextUrl);
     }
-  }, []);
+  }, [activeTab]);
 
   return (
     <>
@@ -221,6 +264,7 @@ export function App(): React.JSX.Element {
           activeTab={activeTab}
           selectedCount={selectedPositions.length}
           onNavigateTab={navigateTab}
+          onActivateEditMode={handleActivateEditMode}
           showToast={showToast}
         />
 
@@ -270,7 +314,6 @@ export function App(): React.JSX.Element {
           config={config}
           activeTab={activeTab}
           onNavigateTab={navigateTab}
-          onActivateEditMode={handleActivateEditMode}
         />
 
         <MobileBottomBar config={config} />

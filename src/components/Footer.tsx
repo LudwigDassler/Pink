@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import type { SiteConfig } from '../config/siteConfig';
 import type { TabId } from './Header';
 
@@ -6,7 +6,6 @@ export interface FooterProps {
   config: SiteConfig;
   activeTab: TabId;
   onNavigateTab: (tab: TabId) => void;
-  onActivateEditMode: () => void;
 }
 
 const FOOTER_LINKS: readonly { id: TabId; label: string }[] = [
@@ -20,42 +19,7 @@ export function Footer({
   config,
   activeTab,
   onNavigateTab,
-  onActivateEditMode,
 }: FooterProps): React.JSX.Element {
-  const clickTimestampsRef = useRef<number[]>([]);
-  const resetTimerRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (resetTimerRef.current !== null) {
-        window.clearTimeout(resetTimerRef.current);
-      }
-    };
-  }, []);
-
-  const handleCopyrightClick = (): void => {
-    const now = Date.now();
-    const recent = clickTimestampsRef.current.filter((t) => now - t <= 2000);
-    recent.push(now);
-    clickTimestampsRef.current = recent;
-
-    if (resetTimerRef.current !== null) {
-      window.clearTimeout(resetTimerRef.current);
-    }
-
-    if (recent.length >= 5) {
-      clickTimestampsRef.current = [];
-      resetTimerRef.current = null;
-      onActivateEditMode();
-      return;
-    }
-
-    resetTimerRef.current = window.setTimeout(() => {
-      clickTimestampsRef.current = [];
-      resetTimerRef.current = null;
-    }, 2000);
-  };
-
   return (
     <footer className="border-t border-slate-200 bg-white pb-28 md:pb-8 pt-8 print:hidden">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
@@ -106,10 +70,7 @@ export function Footer({
           <span>
             Информационный запрос отдела закупки промышленного оборудования и материалов. Не является публичной офертой.
           </span>
-          <span
-            onClick={handleCopyrightClick}
-            className="tabular-nums select-none whitespace-nowrap text-slate-500"
-          >
+          <span className="tabular-nums whitespace-nowrap text-slate-500">
             © 2026 Отдел закупки
           </span>
         </div>

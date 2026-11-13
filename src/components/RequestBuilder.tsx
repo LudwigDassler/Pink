@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Check,
-  ClipboardPaste,
+  ChevronDown,
   Copy,
   FileSpreadsheet,
   ListChecks,
@@ -40,15 +40,15 @@ export interface RequestBuilderProps {
   showToast: (message: string) => void;
 }
 
-interface InitialDraftState {
+interface InitialTextState {
   text: string;
   isManual: boolean;
 }
 
-function loadInitialDraft(
+function loadInitialText(
   config: SiteConfig,
   selectedPositions: SelectedPosition[]
-): InitialDraftState {
+): InitialTextState {
   const defaultTemplate = buildRequestTemplate(config, selectedPositions);
   if (typeof window === 'undefined') {
     return { text: defaultTemplate, isManual: false };
@@ -88,15 +88,18 @@ export function RequestBuilder({
   const sectionRef = useRef<HTMLElement | null>(null);
   const highlightTimerRef = useRef<number | null>(null);
 
-  const [initialState] = useState<InitialDraftState>(() =>
-    loadInitialDraft(config, selectedPositions)
+  const [initialState] = useState<InitialTextState>(() =>
+    loadInitialText(config, selectedPositions)
   );
-  const [draftText, setDraftText] = useState<string>(initialState.text);
-  const [isManualDraft, setIsManualDraft] = useState<boolean>(
+  const [requestText, setRequestText] = useState<string>(initialState.text);
+  const [isManualText, setIsManualText] = useState<boolean>(
     initialState.isManual
   );
   const [isHighlighted, setIsHighlighted] = useState<boolean>(false);
   const [isBuilderInView, setIsBuilderInView] = useState<boolean>(true);
+
+  const [isChipsSpoilerOpen, setIsChipsSpoilerOpen] = useState<boolean>(false);
+  const [isHintSpoilerOpen, setIsHintSpoilerOpen] = useState<boolean>(false);
 
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(
     null
@@ -104,11 +107,11 @@ export function RequestBuilder({
   const [editingValue, setEditingValue] = useState<string>('');
   const cancelInlineEditRef = useRef<boolean>(false);
 
-  const draftTextRef = useRef<string>(draftText);
-  draftTextRef.current = draftText;
+  const requestTextRef = useRef<string>(requestText);
+  requestTextRef.current = requestText;
 
-  const isManualRef = useRef<boolean>(isManualDraft);
-  isManualRef.current = isManualDraft;
+  const isManualRef = useRef<boolean>(isManualText);
+  isManualRef.current = isManualText;
 
   const prevPositionsRef = useRef<SelectedPosition[]>(selectedPositions);
   const prevConfigRef = useRef<SiteConfig>(config);
@@ -134,14 +137,14 @@ export function RequestBuilder({
     };
   }, []);
 
-  // Persist draft to localStorage
+  // Silent background autosave
   useEffect(() => {
     try {
-      window.localStorage.setItem(REQUEST_DRAFT_STORAGE_KEY, draftText);
+      window.localStorage.setItem(REQUEST_DRAFT_STORAGE_KEY, requestText);
     } catch {
-      // Ignore storage quota / private mode restrictions
+      // Ignore storage restrictions silently
     }
-  }, [draftText]);
+  }, [requestText]);
 
   // Smart sync when selectedPositions or config changes
   useEffect(() => {
@@ -158,7 +161,7 @@ export function RequestBuilder({
 
     if (!isManualRef.current) {
       const activeChips = extractActiveQuickChips(
-        draftTextRef.current,
+        requestTextRef.current,
         config.quickChips
       );
       const nextTemplate = buildRequestTemplate(
@@ -166,22 +169,22 @@ export function RequestBuilder({
         selectedPositions,
         activeChips
       );
-      if (nextTemplate !== draftTextRef.current) {
-        setDraftText(nextTemplate);
+      if (nextTemplate !== requestTextRef.current) {
+        setRequestText(nextTemplate);
         triggerHighlight();
       }
       return;
     }
 
-    const syncedDraft = syncCustomDraftWithPositions({
-      currentDraft: draftTextRef.current,
+    const syncedText = syncCustomDraftWithPositions({
+      currentDraft: requestTextRef.current,
       config,
       prevPositions,
       nextPositions: selectedPositions,
     });
 
-    if (syncedDraft !== draftTextRef.current) {
-      setDraftText(syncedDraft);
+    if (syncedText !== requestTextRef.current) {
+      setRequestText(syncedText);
       triggerHighlight();
     }
   }, [selectedPositions, config, triggerHighlight]);
@@ -233,8 +236,8 @@ export function RequestBuilder({
 
   const handleResetTemplate = () => {
     const freshTemplate = buildRequestTemplate(config, selectedPositions);
-    setIsManualDraft(false);
-    setDraftText(freshTemplate);
+    setIsManualText(false);
+    setRequestText(freshTemplate);
     triggerHighlight();
     showToast('Текст запроса сброшен к шаблону');
   };
@@ -242,10 +245,10 @@ export function RequestBuilder({
   const handleClearAllClick = () => {
     setEditingCategoryId(null);
     onClearAll();
-    if (isManualDraft) {
+    if (isManualText) {
       const emptyTemplate = buildRequestTemplate(config, []);
-      setIsManualDraft(false);
-      setDraftText(emptyTemplate);
+      setIsManualText(false);
+      setRequestText(emptyTemplate);
       triggerHighlight();
     }
   };
@@ -272,11 +275,11 @@ export function RequestBuilder({
       }
 
       const updated = appendLinesToRequestText(
-        draftTextRef.current,
+        requestTextRef.current,
         formattedLines
       );
-      setIsManualDraft(true);
-      setDraftText(updated);
+      setIsManualText(true);
+      setRequestText(updated);
       triggerHighlight();
       showToast(`Добавлено позиций из буфера: ${formattedLines.length}`);
     } catch {
@@ -301,25 +304,25 @@ export function RequestBuilder({
 
     event.preventDefault();
     const updated = appendLinesToRequestText(
-      draftTextRef.current,
+      requestTextRef.current,
       formattedLines
     );
-    setIsManualDraft(true);
-    setDraftText(updated);
+    setIsManualText(true);
+    setRequestText(updated);
     triggerHighlight();
     showToast(`Таблица Excel отформатирована (${formattedLines.length} стр.)`);
   };
 
   const handleToggleQuickChip = (chip: string) => {
-    const updated = toggleQuickChipInText(draftText, chip);
-    setDraftText(updated);
+    const updated = toggleQuickChipInText(requestText, chip);
+    setRequestText(updated);
     triggerHighlight();
   };
 
   const handleSendTelegram = () => {
     dispatchToMessenger({
       baseUrl: config.telegramUrl,
-      text: draftText,
+      text: requestText,
       toastMessage: 'Текст скопирован — открываем Telegram',
       showToast,
     });
@@ -328,14 +331,14 @@ export function RequestBuilder({
   const handleSendWhatsApp = () => {
     dispatchToMessenger({
       baseUrl: config.whatsappUrl,
-      text: draftText,
+      text: requestText,
       toastMessage: 'Текст скопирован — открываем WhatsApp',
       showToast,
     });
   };
 
-  const handleCopyDraftOnly = async () => {
-    const ok = await copyTextToClipboard(draftText.trim());
+  const handleCopyTextOnly = async () => {
+    const ok = await copyTextToClipboard(requestText.trim());
     showToast(
       ok
         ? 'Текст скопирован в буфер обмена'
@@ -347,6 +350,11 @@ export function RequestBuilder({
     sectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
+  const activeChipsCount = extractActiveQuickChips(
+    requestText,
+    config.quickChips
+  ).length;
+
   return (
     <>
       <section
@@ -355,22 +363,54 @@ export function RequestBuilder({
         aria-labelledby="request-builder-heading"
         className="bg-white border border-slate-200 rounded-xl p-6 sm:p-8 scroll-mt-24 print:hidden"
       >
-        <div className="mb-6 flex flex-col gap-2 border-b border-slate-200 pb-5 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <div className="mb-2 inline-flex items-center gap-2 px-2.5 py-1 rounded-md border border-blue-200 bg-blue-50 text-xs font-semibold tracking-wide text-[#2563EB] uppercase">
-              <span>Формирование предложения</span>
+        <div className="mb-6 border-b border-slate-200 pb-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="mb-2 inline-flex items-center gap-2 px-2.5 py-1 rounded-md border border-blue-200 bg-blue-50 text-xs font-semibold tracking-wide text-[#2563EB] uppercase">
+                <span>Формирование предложения</span>
+              </div>
+              <h2
+                id="request-builder-heading"
+                className="text-xl sm:text-2xl font-bold tracking-tight text-[#0F172A]"
+              >
+                Быстрая отправка перечня в мессенджер
+              </h2>
             </div>
-            <h2
-              id="request-builder-heading"
-              className="text-xl sm:text-2xl font-bold tracking-tight text-[#0F172A]"
+
+            <button
+              type="button"
+              onClick={() => setIsHintSpoilerOpen((prev) => !prev)}
+              aria-expanded={isHintSpoilerOpen}
+              className="inline-flex self-start sm:self-center items-center gap-1.5 rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-[#0F172A] cursor-pointer"
             >
-              Быстрая отправка перечня в мессенджер
-            </h2>
+              <span>Подсказка по отправке и вставке из Excel</span>
+              <ChevronDown
+                className={`h-4 w-4 shrink-0 text-slate-500 transition-transform duration-200 ${
+                  isHintSpoilerOpen ? 'rotate-180' : ''
+                }`}
+                aria-hidden="true"
+              />
+            </button>
           </div>
-          <p className="text-sm text-slate-600 max-w-md">
-            Отметьте нужные категории, вставьте строки из ведомости или
-            отредактируйте текст вручную перед отправкой.
-          </p>
+
+          {isHintSpoilerOpen && (
+            <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs sm:text-sm leading-relaxed text-slate-600 space-y-1.5">
+              <p>
+                1. Отметьте подходящие категории в каталоге выше или сразу
+                введите перечень позиций в текстовое поле.
+              </p>
+              <p>
+                2. Кнопка «Вставить из буфера / Excel» (а также обычная вставка
+                Ctrl+V из таблицы) автоматически преобразует столбцы в аккуратный
+                список строк.
+              </p>
+              <p>
+                3. При нажатии на кнопку мессенджера текст копируется в буфер
+                обмена — фотографии бирок и файлы ведомостей удобно прикрепить
+                уже в открывшемся диалоге.
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
@@ -386,9 +426,8 @@ export function RequestBuilder({
                     Категории пока не отмечены
                   </h3>
                   <p className="mt-1.5 text-sm leading-relaxed text-slate-600">
-                    Нажмите на карточки в каталоге выше, чтобы добавить позиции
-                    с количеством, либо сразу вставьте ваш список в текстовое
-                    поле справа.
+                    Выберите карточки в каталоге выше или заполните пример
+                    запроса справа в свободной форме.
                   </p>
                 </div>
 
@@ -542,7 +581,7 @@ export function RequestBuilder({
           <div className="lg:col-span-7 flex flex-col">
             <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
               <label
-                htmlFor="request-draft-textarea"
+                htmlFor="request-example-textarea"
                 className="text-sm font-bold text-[#0F172A]"
               >
                 Пример запроса
@@ -563,7 +602,7 @@ export function RequestBuilder({
 
                 <button
                   type="button"
-                  onClick={handleCopyDraftOnly}
+                  onClick={handleCopyTextOnly}
                   className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-[#0F172A] cursor-pointer"
                 >
                   <Copy className="h-3.5 w-3.5" aria-hidden="true" />
@@ -583,12 +622,12 @@ export function RequestBuilder({
 
             <div className="relative">
               <textarea
-                id="request-draft-textarea"
+                id="request-example-textarea"
                 rows={7}
-                value={draftText}
+                value={requestText}
                 onChange={(e) => {
-                  setIsManualDraft(true);
-                  setDraftText(e.target.value);
+                  setIsManualText(true);
+                  setRequestText(e.target.value);
                 }}
                 onPaste={handleTextareaPaste}
                 placeholder="Опишите предлагаемые позиции и ориентировочное количество…"
@@ -600,35 +639,57 @@ export function RequestBuilder({
               />
             </div>
 
-            {/* Quick Append Chips */}
-            <div className="mt-3">
-              <div className="mb-1.5 text-xs font-medium text-slate-500">
-                Быстрые уточнения к тексту:
+            {/* Collapsible Quick Append Chips Spoiler */}
+            {config.quickChips.length > 0 && (
+              <div className="mt-3">
+                <button
+                  type="button"
+                  onClick={() => setIsChipsSpoilerOpen((prev) => !prev)}
+                  aria-expanded={isChipsSpoilerOpen}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-[#0F172A] cursor-pointer"
+                >
+                  <span className="tabular-nums">
+                    Быстрые пометки к тексту
+                    {activeChipsCount > 0 ? ` (${activeChipsCount})` : ''}
+                  </span>
+                  <ChevronDown
+                    className={`h-4 w-4 shrink-0 text-slate-500 transition-transform duration-200 ${
+                      isChipsSpoilerOpen ? 'rotate-180' : ''
+                    }`}
+                    aria-hidden="true"
+                  />
+                </button>
+
+                {isChipsSpoilerOpen && (
+                  <div className="mt-2.5 flex flex-wrap gap-1.5 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    {config.quickChips.map((chip) => {
+                      const active = isQuickChipPresentInText(requestText, chip);
+                      return (
+                        <button
+                          key={chip}
+                          type="button"
+                          onClick={() => handleToggleQuickChip(chip)}
+                          aria-pressed={active}
+                          className={`inline-flex items-center gap-1 rounded-md border px-2.5 py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
+                            active
+                              ? 'border-[#2563EB] bg-blue-50 text-[#2563EB]'
+                              : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-100'
+                          }`}
+                        >
+                          {active && (
+                            <Check
+                              className="h-3 w-3 shrink-0"
+                              aria-hidden="true"
+                            />
+                          )}
+                          <span>{chip}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-              <div className="flex flex-wrap gap-1.5">
-                {config.quickChips.map((chip) => {
-                  const active = isQuickChipPresentInText(draftText, chip);
-                  return (
-                    <button
-                      key={chip}
-                      type="button"
-                      onClick={() => handleToggleQuickChip(chip)}
-                      aria-pressed={active}
-                      className={`inline-flex items-center gap-1 rounded-md border px-2.5 py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
-                        active
-                          ? 'border-[#2563EB] bg-blue-50 text-[#2563EB]'
-                          : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300 hover:bg-slate-100'
-                      }`}
-                    >
-                      {active && (
-                        <Check className="h-3 w-3 shrink-0" aria-hidden="true" />
-                      )}
-                      <span>{chip}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            )}
 
             {/* Unified Symmetrical 2-Column Messenger Dispatch */}
             <div className="mt-5 pt-4 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -656,14 +717,6 @@ export function RequestBuilder({
                 <span>Отправить в WhatsApp</span>
               </button>
             </div>
-
-            <p className="mt-2.5 flex items-center gap-1.5 text-xs text-slate-500">
-              <ClipboardPaste className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-              <span>
-                При нажатии текст также копируется в буфер обмена — фотографии и
-                файлы ведомостей удобно прикрепить уже в открывшемся чате.
-              </span>
-            </p>
           </div>
         </div>
       </section>

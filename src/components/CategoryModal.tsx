@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Check, Plus, Send, Trash2 } from 'lucide-react';
+import { Check, ChevronDown, Plus, Send, Trash2 } from 'lucide-react';
 import type { SelectedPosition, SiteConfig } from '../config/siteConfig';
 import {
   buildSinglePositionText,
@@ -49,6 +49,8 @@ export function CategoryModal({
     categoryId: activeCategoryId,
     value: existingPosition?.note ?? '',
   });
+  const [isConditionSpoilerOpen, setIsConditionSpoilerOpen] =
+    useState<boolean>(false);
 
   const note =
     noteState.categoryId === activeCategoryId
@@ -226,7 +228,7 @@ export function CategoryModal({
         </div>
 
         {/* Content */}
-        <div className="p-4 sm:p-6 space-y-5">
+        <div className="p-4 sm:p-6 space-y-4">
           <div className="flex items-start gap-3.5">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-[#2563EB]">
               <CategoryIcon icon={category.icon} className="h-7 w-7" />
@@ -262,40 +264,59 @@ export function CategoryModal({
             />
           </div>
 
-          {/* Quick Condition Chips */}
-          <div>
-            <div className="mb-2 text-xs font-medium text-slate-500">
-              Состояние позиции:
+          {/* Collapsible Condition Chips Spoiler */}
+          {config.modalConditionChips.length > 0 && (
+            <div>
+              <button
+                type="button"
+                onClick={() => setIsConditionSpoilerOpen((prev) => !prev)}
+                aria-expanded={isConditionSpoilerOpen}
+                className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-[#0F172A] cursor-pointer"
+              >
+                <span>Дополнительные отметки о состоянии</span>
+                <ChevronDown
+                  className={`h-4 w-4 shrink-0 text-slate-500 transition-transform duration-200 ${
+                    isConditionSpoilerOpen ? 'rotate-180' : ''
+                  }`}
+                  aria-hidden="true"
+                />
+              </button>
+
+              {isConditionSpoilerOpen && (
+                <div className="mt-2.5 flex flex-wrap gap-1.5 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                  {config.modalConditionChips.map((chip) => {
+                    const active = hasConditionInNote(note, chip);
+                    return (
+                      <button
+                        key={chip}
+                        type="button"
+                        onClick={() => setNote(toggleConditionInNote(note, chip))}
+                        aria-pressed={active}
+                        className={`inline-flex items-center gap-1 rounded-md border px-2.5 py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
+                          active
+                            ? 'border-[#2563EB] bg-blue-50 text-[#2563EB]'
+                            : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-100'
+                        }`}
+                      >
+                        {active ? (
+                          <Check
+                            className="h-3 w-3 shrink-0"
+                            aria-hidden="true"
+                          />
+                        ) : (
+                          <Plus
+                            className="h-3 w-3 shrink-0 text-slate-400"
+                            aria-hidden="true"
+                          />
+                        )}
+                        <span>{chip}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-            <div className="flex flex-wrap gap-1.5">
-              {config.modalConditionChips.map((chip) => {
-                const active = hasConditionInNote(note, chip);
-                return (
-                  <button
-                    key={chip}
-                    type="button"
-                    onClick={() => setNote(toggleConditionInNote(note, chip))}
-                    aria-pressed={active}
-                    className={`inline-flex items-center gap-1 rounded-md border px-2.5 py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
-                      active
-                        ? 'border-[#2563EB] bg-blue-50 text-[#2563EB]'
-                        : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300 hover:bg-slate-100'
-                    }`}
-                  >
-                    {active ? (
-                      <Check className="h-3 w-3 shrink-0" aria-hidden="true" />
-                    ) : (
-                      <Plus
-                        className="h-3 w-3 shrink-0 text-slate-400"
-                        aria-hidden="true"
-                      />
-                    )}
-                    <span>{chip}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Footer Actions */}
@@ -306,7 +327,10 @@ export function CategoryModal({
               onClick={handleSave}
               className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#0F172A] hover:bg-slate-800 px-5 text-sm font-bold text-white whitespace-nowrap transition-colors cursor-pointer"
             >
-              <Check className="h-4 w-4 shrink-0 text-white" aria-hidden="true" />
+              <Check
+                className="h-4 w-4 shrink-0 text-white"
+                aria-hidden="true"
+              />
               <span>
                 {isAlreadySelected ? 'Сохранить изменения' : 'Добавить в заявку'}
               </span>

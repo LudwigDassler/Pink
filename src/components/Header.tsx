@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Copy, Phone } from 'lucide-react';
 import type { SiteConfig } from '../config/siteConfig';
 
@@ -9,6 +9,7 @@ export interface HeaderProps {
   activeTab: TabId;
   selectedCount: number;
   onNavigateTab: (tab: TabId) => void;
+  onActivateEditMode: () => void;
   showToast: (message: string) => void;
 }
 
@@ -51,8 +52,46 @@ export function Header({
   activeTab,
   selectedCount,
   onNavigateTab,
+  onActivateEditMode,
   showToast,
 }: HeaderProps): React.JSX.Element {
+  const clickTimestampsRef = useRef<number[]>([]);
+  const clickTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (clickTimerRef.current !== null) {
+        window.clearTimeout(clickTimerRef.current);
+      }
+    };
+  }, []);
+
+  const handleBrandClick = (e: React.MouseEvent<HTMLAnchorElement>): void => {
+    e.preventDefault();
+    const now = Date.now();
+    const recent = clickTimestampsRef.current.filter((t) => now - t <= 900);
+    recent.push(now);
+    clickTimestampsRef.current = recent;
+
+    if (clickTimerRef.current !== null) {
+      window.clearTimeout(clickTimerRef.current);
+    }
+
+    if (recent.length >= 3) {
+      clickTimestampsRef.current = [];
+      clickTimerRef.current = null;
+      onActivateEditMode();
+      return;
+    }
+
+    clickTimerRef.current = window.setTimeout(() => {
+      clickTimestampsRef.current = [];
+      clickTimerRef.current = null;
+    }, 900);
+
+    onNavigateTab('main');
+  };
+
   const handleCopyPhone = async (): Promise<void> => {
     await copyTextSafe(config.phoneDisplay);
     showToast('Номер скопирован');
@@ -61,17 +100,13 @@ export function Header({
   return (
     <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-slate-200 print:hidden">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        {/* Top row */}
         <div className="h-14 sm:h-16 flex items-center justify-between gap-2">
-          {/* Left: Technical mark + static 24/7 plate */}
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          {/* Left: Technical mark + brand title (triple-click activates editor) */}
+          <div className="flex items-center min-w-0">
             <a
               href="#main"
-              onClick={(e) => {
-                e.preventDefault();
-                onNavigateTab('main');
-              }}
-              className="flex items-center gap-2 text-[#0F172A] hover:text-[#2563EB] transition-colors min-w-0"
+              onClick={handleBrandClick}
+              className="flex items-center gap-2.5 text-[#0F172A] hover:text-[#2563EB] transition-colors min-w-0 select-none"
             >
               <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#2563EB] text-white flex items-center justify-center shrink-0">
                 <svg
@@ -90,18 +125,9 @@ export function Header({
                 </svg>
               </span>
               <span className="font-extrabold text-xs sm:text-sm tracking-tight leading-tight truncate">
-                <span className="hidden min-[360px]:inline">Отдел закупки</span>
-                <span className="min-[360px]:hidden">Закупка</span>
+                Отдел закупки
               </span>
             </a>
-
-            <span
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-[#16A34A]/30 bg-[#16A34A]/10 text-[11px] sm:text-xs font-bold text-[#15803D] tabular-nums whitespace-nowrap shrink-0"
-              title="Прием и оценка заявок круглосуточно"
-            >
-              <span className="h-2 w-2 rounded-[2px] bg-[#16A34A] shrink-0" />
-              <span>{config.schedule}</span>
-            </span>
           </div>
 
           {/* Center: Desktop inline tabs */}

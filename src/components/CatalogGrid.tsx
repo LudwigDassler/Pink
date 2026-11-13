@@ -1,5 +1,5 @@
-import React from 'react';
-import { Check, Plus, SlidersHorizontal } from 'lucide-react';
+import React, { useState } from 'react';
+import { Check, ChevronDown, Plus, SlidersHorizontal } from 'lucide-react';
 import type { SelectedPosition, SiteConfig } from '../config/siteConfig';
 import { CategoryIcon } from './CategoryIcon';
 
@@ -18,6 +18,8 @@ export function CatalogGrid({
   onOpenModal,
   onScrollToBuilder,
 }: CatalogGridProps): React.JSX.Element {
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
+
   const selectedMap = new Map(
     selectedPositions.map((pos) => [pos.categoryId, pos]),
   );
@@ -27,7 +29,7 @@ export function CatalogGrid({
       id="catalog"
       className="scroll-mt-24 bg-white border border-slate-200 rounded-xl p-6 sm:p-8"
     >
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-5">
         <div>
           <div className="inline-flex items-center px-2.5 py-1 rounded-md border border-slate-200 bg-slate-50 text-xs font-bold uppercase tracking-wider text-[#2563EB] tabular-nums">
             Номенклатура закупки · 01–{String(config.categories.length).padStart(2, '0')}
@@ -35,9 +37,28 @@ export function CatalogGrid({
           <h2 className="mt-2.5 text-xl sm:text-2xl font-extrabold text-[#0F172A] tracking-tight break-words">
             Категории закупаемого оборудования и материалов
           </h2>
-          <p className="mt-1 text-sm text-slate-600 break-words">
-            Отметьте подходящие позиции в один клик или нажмите на карточку, чтобы указать ориентировочный объем.
-          </p>
+
+          <div className="mt-2">
+            <button
+              type="button"
+              onClick={() => setIsHelpOpen((prev) => !prev)}
+              aria-expanded={isHelpOpen}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-[#2563EB] transition-colors"
+            >
+              <span>Как быстро отметить позиции</span>
+              <ChevronDown
+                className={`w-3.5 h-3.5 transition-transform ${
+                  isHelpOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+
+            {isHelpOpen && (
+              <p className="mt-2 rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs sm:text-sm text-slate-600 leading-relaxed break-words">
+                Отметьте подходящие позиции кнопкой «В список» в один клик или нажмите на карточку категории, чтобы указать ориентировочное количество и состояние.
+              </p>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
@@ -79,7 +100,6 @@ export function CatalogGrid({
               }`}
             >
               <div>
-                {/* Top row: Technical SVG icon + КАТ. badge */}
                 <div className="flex items-start justify-between gap-3">
                   <div
                     className={`w-12 h-12 rounded-xl flex items-center justify-center border transition-colors ${
@@ -102,12 +122,10 @@ export function CatalogGrid({
                   </span>
                 </div>
 
-                {/* Category title */}
                 <h3 className="mt-4 text-base font-bold text-[#0F172A] leading-snug break-words">
                   {cat.title}
                 </h3>
 
-                {/* Note preview or placeholder */}
                 {isSelected && selected?.note.trim() ? (
                   <div className="mt-2.5 rounded-lg bg-[#EFF6FF] border border-[#BFDBFE]/70 px-2.5 py-1.5 text-xs font-medium text-[#1E40AF] break-words">
                     {selected.note}
@@ -119,7 +137,6 @@ export function CatalogGrid({
                 )}
               </div>
 
-              {/* Card bottom actions */}
               <div
                 className="mt-5 pt-3.5 border-t border-slate-100 flex items-center justify-between gap-2"
                 onClick={(e) => e.stopPropagation()}
