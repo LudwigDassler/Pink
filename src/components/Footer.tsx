@@ -57,15 +57,15 @@ export function Footer({
   };
 
   return (
-    <footer className="border-t border-[#E2E8F0] bg-[#FFFFFF] pb-24 md:pb-8 pt-8 print:hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 pb-6 border-b border-[#F1F5F9]">
+    <footer className="border-t border-slate-200 bg-white pb-28 md:pb-8 pt-8 print:hidden">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 pb-6 border-b border-slate-100">
           <div className="max-w-xl">
             <p className="text-sm font-bold text-[#0F172A] break-words">
               {config.politeClosing}
             </p>
-            <p className="mt-1 text-xs text-[#64748B] tabular-nums break-words">
-              {config.guaranteeText} · Приём предложений {config.schedule} ·{' '}
+            <p className="mt-1 text-xs text-slate-500 tabular-nums break-words">
+              {config.guaranteeText} ·{' '}
               <a
                 href={config.phoneTel}
                 className="font-semibold text-[#0F172A] hover:text-[#2563EB] tabular-nums whitespace-nowrap"
@@ -92,7 +92,7 @@ export function Footer({
                   className={`text-xs sm:text-sm font-semibold transition-colors ${
                     isActive
                       ? 'text-[#2563EB]'
-                      : 'text-[#475569] hover:text-[#0F172A]'
+                      : 'text-slate-600 hover:text-[#0F172A]'
                   }`}
                 >
                   {item.label}
@@ -102,13 +102,13 @@ export function Footer({
           </nav>
         </div>
 
-        <div className="pt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-[#64748B]">
+        <div className="pt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-500">
           <span>
             Информационный запрос отдела закупки промышленного оборудования и материалов. Не является публичной офертой.
           </span>
           <span
             onClick={handleCopyrightClick}
-            className="tabular-nums select-none whitespace-nowrap text-[#64748B]"
+            className="tabular-nums select-none whitespace-nowrap text-slate-500"
           >
             © 2026 Отдел закупки
           </span>

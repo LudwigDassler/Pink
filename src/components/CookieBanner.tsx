@@ -38,7 +38,7 @@ export function CookieBanner({
   return (
     <aside
       aria-label="Уведомление об использовании локального хранилища браузера"
-      className="fixed left-3 right-3 bottom-20 md:left-6 md:right-auto md:bottom-4 md:max-w-md z-40 print:hidden bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-4 shadow-lg shadow-slate-900/5"
+      className="fixed left-3 right-3 bottom-20 md:left-6 md:right-auto md:bottom-4 md:max-w-md z-40 print:hidden bg-white border border-slate-200 rounded-xl p-4 shadow-lg shadow-slate-900/5"
     >
       <div className="flex items-start gap-3">
         <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-[#2563EB] shrink-0 mt-0.5">
@@ -50,7 +50,7 @@ export function CookieBanner({
             <button
               type="button"
               onClick={onOpenLegal}
-              className="font-semibold text-[#2563EB] hover:underline focus:outline-none"
+              className="font-semibold text-[#2563EB] hover:underline focus:outline-none cursor-pointer"
             >
               Правовая информация
             </button>
@@ -59,7 +59,7 @@ export function CookieBanner({
             <button
               type="button"
               onClick={handleAccept}
-              className="inline-flex items-center justify-center rounded-lg bg-[#2563EB] hover:bg-blue-700 px-4 py-1.5 min-h-9 text-xs sm:text-sm font-semibold text-white transition-colors cursor-pointer"
+              className="inline-flex items-center justify-center rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] px-4 py-1.5 min-h-9 text-xs sm:text-sm font-semibold text-white transition-colors cursor-pointer"
             >
               Понятно
             </button>

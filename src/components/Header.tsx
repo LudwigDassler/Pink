@@ -59,11 +59,11 @@ export function Header({
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-[#FFFFFF]/95 backdrop-blur-md border-b border-[#E2E8F0] print:hidden">
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-slate-200 print:hidden">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
         {/* Top row */}
         <div className="h-14 sm:h-16 flex items-center justify-between gap-2">
-          {/* Left: Technical mark + Live 24/7 indicator */}
+          {/* Left: Technical mark + static 24/7 plate */}
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <a
               href="#main"
@@ -96,14 +96,11 @@ export function Header({
             </a>
 
             <span
-              className="inline-flex items-center gap-1.5 rounded-full bg-[#16A34A]/10 border border-[#16A34A]/20 px-2 py-0.5 text-[11px] sm:text-xs font-bold text-[#16A34A] tabular-nums whitespace-nowrap shrink-0"
-              title="Приём предложений круглосуточно"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-[#16A34A]/30 bg-[#16A34A]/10 text-[11px] sm:text-xs font-bold text-[#15803D] tabular-nums whitespace-nowrap shrink-0"
+              title="Прием и оценка заявок круглосуточно"
             >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#16A34A] opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#16A34A]" />
-              </span>
-              {config.schedule}
+              <span className="h-2 w-2 rounded-[2px] bg-[#16A34A] shrink-0" />
+              <span>{config.schedule}</span>
             </span>
           </div>
 
@@ -126,12 +123,12 @@ export function Header({
                   className={`inline-flex items-center gap-1.5 px-2.5 lg:px-3.5 py-1.5 rounded-lg text-xs lg:text-sm font-semibold transition-colors whitespace-nowrap ${
                     isActive
                       ? 'bg-[#EFF6FF] text-[#2563EB]'
-                      : 'text-[#475569] hover:text-[#0F172A] hover:bg-[#F8FAFC]'
+                      : 'text-slate-600 hover:text-[#0F172A] hover:bg-slate-50'
                   }`}
                 >
                   <span>{tab.label}</span>
                   {tab.id === 'main' && selectedCount > 0 && (
-                    <span className="inline-flex items-center justify-center rounded-full bg-[#2563EB] text-white text-[11px] font-bold px-1.5 min-w-[1.25rem] h-5 tabular-nums">
+                    <span className="inline-flex items-center justify-center rounded-md bg-[#2563EB] text-white text-[11px] font-bold px-1.5 min-w-[1.25rem] h-5 tabular-nums">
                       {selectedCount}
                     </span>
                   )}
@@ -154,7 +151,7 @@ export function Header({
               onClick={handleCopyPhone}
               aria-label="Скопировать номер телефона"
               title="Скопировать номер"
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] hover:bg-[#EFF6FF] hover:border-[#2563EB]/30 text-[#475569] hover:text-[#2563EB] flex items-center justify-center transition-colors shrink-0"
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg border border-slate-200 bg-slate-50 hover:bg-[#EFF6FF] hover:border-[#2563EB]/30 text-slate-600 hover:text-[#2563EB] flex items-center justify-center transition-colors shrink-0"
             >
               <Copy className="w-3.5 h-3.5" />
             </button>
@@ -163,10 +160,10 @@ export function Header({
       </div>
 
       {/* Second row: Mobile horizontal scrollable 4-tab ribbon */}
-      <div className="md:hidden border-t border-[#E2E8F0]/80 bg-[#FFFFFF]">
+      <div className="md:hidden border-t border-slate-200/80 bg-white">
         <nav
           aria-label="Мобильная навигация"
-          className="flex items-center gap-1 px-3 py-1.5 overflow-x-auto no-scrollbar"
+          className="max-w-6xl mx-auto flex items-center gap-1.5 px-4 sm:px-6 py-1.5 overflow-x-auto no-scrollbar"
         >
           {NAV_TABS.map((tab) => {
             const isActive = activeTab === tab.id;
@@ -182,13 +179,13 @@ export function Header({
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 transition-colors ${
                   isActive
                     ? 'bg-[#2563EB] text-white'
-                    : 'bg-[#F8FAFC] text-[#475569] border border-[#E2E8F0]'
+                    : 'bg-slate-50 text-slate-600 border border-slate-200'
                 }`}
               >
                 <span>{tab.label}</span>
                 {tab.id === 'main' && selectedCount > 0 && (
                   <span
-                    className={`inline-flex items-center justify-center rounded-full text-[11px] font-bold px-1.5 min-w-[1.15rem] h-4 tabular-nums ${
+                    className={`inline-flex items-center justify-center rounded-md text-[11px] font-bold px-1.5 min-w-[1.15rem] h-4 tabular-nums ${
                       isActive
                         ? 'bg-white text-[#2563EB]'
                         : 'bg-[#2563EB] text-white'

@@ -186,7 +186,7 @@ export function RequestBuilder({
     }
   }, [selectedPositions, config, triggerHighlight]);
 
-  // IntersectionObserver for floating scroll pill
+  // IntersectionObserver for floating scroll indicator
   useEffect(() => {
     const target = sectionRef.current;
     if (!target || typeof IntersectionObserver === 'undefined') {
@@ -338,7 +338,7 @@ export function RequestBuilder({
     const ok = await copyTextToClipboard(draftText.trim());
     showToast(
       ok
-        ? 'Текст запроса скопирован в буфер обмена'
+        ? 'Текст скопирован в буфер обмена'
         : 'Не удалось скопировать текст автоматически'
     );
   };
@@ -353,333 +353,333 @@ export function RequestBuilder({
         id="request-builder"
         ref={sectionRef}
         aria-labelledby="request-builder-heading"
-        className="mx-auto w-full max-w-6xl px-4 sm:px-6 py-8 md:py-12 scroll-mt-24 print:hidden"
+        className="bg-white border border-slate-200 rounded-xl p-6 sm:p-8 scroll-mt-24 print:hidden"
       >
-        <div className="rounded-xl border border-[#E2E8F0] bg-[#FFFFFF] p-4 sm:p-6 md:p-8 shadow-xs">
-          <div className="mb-6 flex flex-col gap-2 border-b border-[#E2E8F0] pb-5 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <div className="mb-1.5 inline-flex items-center gap-2 text-xs font-semibold tracking-wide text-[#2563EB] uppercase">
-                <span>Формирование предложения</span>
-              </div>
-              <h2
-                id="request-builder-heading"
-                className="text-xl sm:text-2xl font-bold tracking-tight text-[#0F172A]"
-              >
-                Быстрая отправка перечня в мессенджер
-              </h2>
+        <div className="mb-6 flex flex-col gap-2 border-b border-slate-200 pb-5 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="mb-2 inline-flex items-center gap-2 px-2.5 py-1 rounded-md border border-blue-200 bg-blue-50 text-xs font-semibold tracking-wide text-[#2563EB] uppercase">
+              <span>Формирование предложения</span>
             </div>
-            <p className="text-sm text-slate-600 max-w-md">
-              Отметьте нужные категории, вставьте строки из ведомости или
-              отредактируйте текст вручную перед отправкой.
-            </p>
+            <h2
+              id="request-builder-heading"
+              className="text-xl sm:text-2xl font-bold tracking-tight text-[#0F172A]"
+            >
+              Быстрая отправка перечня в мессенджер
+            </h2>
           </div>
+          <p className="text-sm text-slate-600 max-w-md">
+            Отметьте нужные категории, вставьте строки из ведомости или
+            отредактируйте текст вручную перед отправкой.
+          </p>
+        </div>
 
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
-            {/* Left Column: Selected Positions */}
-            <div className="lg:col-span-5 flex flex-col">
-              {selectedPositions.length === 0 ? (
-                <div className="flex flex-1 flex-col justify-between rounded-xl border border-dashed border-slate-300 bg-[#F8FAFC] p-5 sm:p-6">
-                  <div>
-                    <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[#E2E8F0] bg-[#FFFFFF] text-[#2563EB]">
-                      <ListChecks className="h-5 w-5" aria-hidden="true" />
-                    </div>
-                    <h3 className="text-base font-bold text-[#0F172A]">
-                      Категории пока не отмечены
-                    </h3>
-                    <p className="mt-1.5 text-sm leading-relaxed text-slate-600">
-                      Нажмите на карточки в каталоге выше, чтобы добавить
-                      позиции с количеством, либо сразу вставьте ваш список в
-                      текстовое поле справа.
-                    </p>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
+          {/* Left Column: Selected Positions */}
+          <div className="lg:col-span-5 flex flex-col">
+            {selectedPositions.length === 0 ? (
+              <div className="flex flex-1 flex-col justify-between rounded-xl border border-dashed border-slate-300 bg-slate-50 p-5 sm:p-6">
+                <div>
+                  <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-[#2563EB]">
+                    <ListChecks className="h-5 w-5" aria-hidden="true" />
                   </div>
-
-                  <div className="mt-5 pt-4 border-t border-[#E2E8F0]">
-                    <button
-                      type="button"
-                      onClick={onSelectAll}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[#E2E8F0] bg-[#FFFFFF] px-4 py-2.5 text-sm font-semibold text-[#0F172A] tabular-nums transition-colors hover:border-[#2563EB] hover:text-[#2563EB] cursor-pointer"
-                    >
-                      <ListChecks className="h-4 w-4 shrink-0 text-[#2563EB]" />
-                      <span>Выбрать все категории (01–08)</span>
-                    </button>
-                  </div>
+                  <h3 className="text-base font-bold text-[#0F172A]">
+                    Категории пока не отмечены
+                  </h3>
+                  <p className="mt-1.5 text-sm leading-relaxed text-slate-600">
+                    Нажмите на карточки в каталоге выше, чтобы добавить позиции
+                    с количеством, либо сразу вставьте ваш список в текстовое
+                    поле справа.
+                  </p>
                 </div>
-              ) : (
-                <div className="flex flex-1 flex-col rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4 sm:p-5">
-                  <div className="mb-3.5 flex items-center justify-between gap-2">
-                    <div className="inline-flex items-center gap-2">
-                      <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-md bg-[#2563EB] px-2 text-xs font-bold text-white tabular-nums">
-                        {selectedPositions.length}
-                      </span>
-                      <span className="text-sm font-bold text-[#0F172A] tabular-nums">
-                        Выбранные позиции
-                      </span>
-                    </div>
 
-                    <button
-                      type="button"
-                      onClick={handleClearAllClick}
-                      className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-200/70 hover:text-[#0F172A] cursor-pointer"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-                      <span>Очистить выбор</span>
-                    </button>
+                <div className="mt-5 pt-4 border-t border-slate-200">
+                  <button
+                    type="button"
+                    onClick={onSelectAll}
+                    className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-[#0F172A] tabular-nums transition-colors hover:border-[#2563EB] hover:text-[#2563EB] cursor-pointer"
+                  >
+                    <ListChecks className="h-4 w-4 shrink-0 text-[#2563EB]" />
+                    <span>Выбрать все категории (01–08)</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-1 flex-col rounded-xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
+                <div className="mb-3.5 flex items-center justify-between gap-2">
+                  <div className="inline-flex items-center gap-2">
+                    <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-md bg-[#2563EB] px-2 text-xs font-bold text-white tabular-nums">
+                      {selectedPositions.length}
+                    </span>
+                    <span className="text-sm font-bold text-[#0F172A] tabular-nums">
+                      Выбранные позиции
+                    </span>
                   </div>
 
-                  <div className="space-y-2.5 max-h-[420px] overflow-y-auto pr-0.5">
-                    {selectedPositions.map((pos) => {
-                      const category = categoryMap.get(pos.categoryId);
-                      const codeLabel = category?.code ?? `КАТ. ${pos.categoryId}`;
-                      const titleLabel =
-                        category?.title ?? `Категория ${pos.categoryId}`;
-                      const placeholderText =
-                        category?.placeholder ??
-                        'Укажите количество и состояние';
-                      const isInlineEditing =
-                        editingCategoryId === pos.categoryId;
+                  <button
+                    type="button"
+                    onClick={handleClearAllClick}
+                    className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-200/70 hover:text-[#0F172A] cursor-pointer"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                    <span>Очистить выбор</span>
+                  </button>
+                </div>
 
-                      return (
-                        <div
-                          key={pos.categoryId}
-                          className="rounded-xl border border-[#E2E8F0] bg-[#FFFFFF] p-3 transition-colors hover:border-slate-300"
-                        >
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-2">
-                                <span className="inline-block rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-bold text-slate-700 tabular-nums">
-                                  {codeLabel}
-                                </span>
-                                <span className="truncate text-sm font-semibold text-[#0F172A]">
-                                  {titleLabel}
-                                </span>
-                              </div>
-                            </div>
+                <div className="space-y-2.5 max-h-[420px] overflow-y-auto pr-0.5">
+                  {selectedPositions.map((pos) => {
+                    const category = categoryMap.get(pos.categoryId);
+                    const codeLabel = category?.code ?? `КАТ. ${pos.categoryId}`;
+                    const titleLabel =
+                      category?.title ?? `Категория ${pos.categoryId}`;
+                    const placeholderText =
+                      category?.placeholder ??
+                      'Укажите количество и состояние';
+                    const isInlineEditing =
+                      editingCategoryId === pos.categoryId;
 
-                            <div className="flex shrink-0 items-center gap-1">
-                              <button
-                                type="button"
-                                onClick={() => onOpenModal(pos.categoryId)}
-                                title="Открыть карточку позиции"
-                                aria-label={`Подробности по категории ${titleLabel}`}
-                                className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#2563EB] cursor-pointer"
-                              >
-                                <Pencil className="h-3.5 w-3.5" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => onRemovePosition(pos.categoryId)}
-                                title="Убрать позицию"
-                                aria-label={`Убрать ${titleLabel}`}
-                                className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-base font-semibold leading-none text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600 cursor-pointer"
-                              >
-                                ×
-                              </button>
+                    return (
+                      <div
+                        key={pos.categoryId}
+                        className="rounded-xl border border-slate-200 bg-white p-3 transition-colors hover:border-slate-300"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="inline-block px-2 py-0.5 rounded-md border border-slate-200 bg-slate-50 text-[11px] font-bold text-slate-700 tabular-nums">
+                                {codeLabel}
+                              </span>
+                              <span className="truncate text-sm font-semibold text-[#0F172A]">
+                                {titleLabel}
+                              </span>
                             </div>
                           </div>
 
-                          <div className="mt-2">
-                            {isInlineEditing ? (
-                              <input
-                                type="text"
-                                autoFocus
-                                value={editingValue}
-                                onChange={(e) =>
-                                  setEditingValue(e.target.value)
-                                }
-                                onBlur={() => handleInlineBlur(pos.categoryId)}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') {
-                                    e.preventDefault();
-                                    e.currentTarget.blur();
-                                  } else if (e.key === 'Escape') {
-                                    e.preventDefault();
-                                    cancelInlineEditRef.current = true;
-                                    e.currentTarget.blur();
-                                  }
-                                }}
-                                placeholder={placeholderText}
-                                aria-label={`Количество и примечание для ${titleLabel}`}
-                                className="w-full rounded-lg border border-[#2563EB] bg-[#FFFFFF] px-2.5 py-1.5 text-base text-[#0F172A] outline-none ring-2 ring-[#2563EB]/15"
-                              />
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  startInlineEdit(pos.categoryId, pos.note)
-                                }
-                                className="w-full rounded-lg border border-transparent bg-slate-50 px-2.5 py-1.5 text-left text-xs sm:text-sm transition-colors hover:border-[#E2E8F0] hover:bg-slate-100/80 cursor-text"
-                              >
-                                {pos.note.trim() ? (
-                                  <span className="font-medium text-[#0F172A] break-words">
-                                    {pos.note}
-                                  </span>
-                                ) : (
-                                  <span className="text-slate-500">
-                                    + Указать количество / детали в одну строку…
-                                  </span>
-                                )}
-                              </button>
-                            )}
+                          <div className="flex shrink-0 items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => onOpenModal(pos.categoryId)}
+                              title="Открыть карточку позиции"
+                              aria-label={`Подробности по категории ${titleLabel}`}
+                              className="inline-flex h-7 w-7 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#2563EB] cursor-pointer"
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => onRemovePosition(pos.categoryId)}
+                              title="Убрать позицию"
+                              aria-label={`Убрать ${titleLabel}`}
+                              className="inline-flex h-7 w-7 items-center justify-center rounded-md text-base font-semibold leading-none text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600 cursor-pointer"
+                            >
+                              ×
+                            </button>
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
 
-                  {selectedPositions.length < config.categories.length && (
-                    <div className="mt-3 pt-3 border-t border-[#E2E8F0]">
-                      <button
-                        type="button"
-                        onClick={onSelectAll}
-                        className="text-xs font-semibold text-[#2563EB] hover:underline tabular-nums cursor-pointer"
-                      >
-                        Выбрать все категории (01–08)
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Right Column: Editable Request Text & Messenger Dispatch */}
-            <div className="lg:col-span-7 flex flex-col">
-              <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
-                <label
-                  htmlFor="request-draft-textarea"
-                  className="text-sm font-bold text-[#0F172A]"
-                >
-                  Готовый текст запроса
-                </label>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={handlePasteFromClipboard}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] px-2.5 py-1.5 text-xs font-semibold text-[#0F172A] transition-colors hover:border-[#2563EB] hover:bg-blue-50/40 hover:text-[#2563EB] cursor-pointer"
-                  >
-                    <FileSpreadsheet
-                      className="h-3.5 w-3.5 text-[#2563EB]"
-                      aria-hidden="true"
-                    />
-                    <span>Вставить из буфера / Excel</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleResetTemplate}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-[#E2E8F0] bg-[#FFFFFF] px-2.5 py-1.5 text-xs font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:text-[#0F172A] cursor-pointer"
-                  >
-                    <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
-                    <span>Сбросить к шаблону</span>
-                  </button>
-                </div>
-              </div>
-
-              <div className="relative">
-                <textarea
-                  id="request-draft-textarea"
-                  rows={7}
-                  value={draftText}
-                  onChange={(e) => {
-                    setIsManualDraft(true);
-                    setDraftText(e.target.value);
-                  }}
-                  onPaste={handleTextareaPaste}
-                  placeholder="Опишите предлагаемые позиции и ориентировочное количество…"
-                  className={`w-full rounded-xl border bg-[#FFFFFF] p-3.5 text-base leading-relaxed text-[#0F172A] outline-none transition-all duration-300 ${
-                    isHighlighted
-                      ? 'border-[#16A34A] ring-2 ring-[#16A34A]/20 bg-emerald-50/20'
-                      : 'border-[#E2E8F0] focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15'
-                  }`}
-                />
-              </div>
-
-              {/* Quick Append Chips */}
-              <div className="mt-3">
-                <div className="mb-1.5 text-xs font-medium text-slate-500">
-                  Быстрые уточнения к тексту:
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {config.quickChips.map((chip) => {
-                    const active = isQuickChipPresentInText(draftText, chip);
-                    return (
-                      <button
-                        key={chip}
-                        type="button"
-                        onClick={() => handleToggleQuickChip(chip)}
-                        aria-pressed={active}
-                        className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
-                          active
-                            ? 'border-[#2563EB] bg-blue-50 text-[#2563EB]'
-                            : 'border-[#E2E8F0] bg-[#F8FAFC] text-slate-700 hover:border-slate-300 hover:bg-slate-100'
-                        }`}
-                      >
-                        {active && (
-                          <Check className="h-3 w-3 shrink-0" aria-hidden="true" />
-                        )}
-                        <span>{chip}</span>
-                      </button>
+                        <div className="mt-2">
+                          {isInlineEditing ? (
+                            <input
+                              type="text"
+                              autoFocus
+                              value={editingValue}
+                              onChange={(e) => setEditingValue(e.target.value)}
+                              onBlur={() => handleInlineBlur(pos.categoryId)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  e.currentTarget.blur();
+                                } else if (e.key === 'Escape') {
+                                  e.preventDefault();
+                                  cancelInlineEditRef.current = true;
+                                  e.currentTarget.blur();
+                                }
+                              }}
+                              placeholder={placeholderText}
+                              aria-label={`Количество и примечание для ${titleLabel}`}
+                              className="w-full rounded-lg border border-[#2563EB] bg-white px-2.5 py-1.5 text-base text-[#0F172A] outline-none ring-2 ring-[#2563EB]/15"
+                            />
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                startInlineEdit(pos.categoryId, pos.note)
+                              }
+                              className="w-full rounded-lg border border-transparent bg-slate-50 px-2.5 py-1.5 text-left text-xs sm:text-sm transition-colors hover:border-slate-200 hover:bg-slate-100/80 cursor-text"
+                            >
+                              {pos.note.trim() ? (
+                                <span className="font-medium text-[#0F172A] break-words">
+                                  {pos.note}
+                                </span>
+                              ) : (
+                                <span className="text-slate-500">
+                                  + Указать количество / детали в одну строку…
+                                </span>
+                              )}
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     );
                   })}
                 </div>
+
+                {selectedPositions.length < config.categories.length && (
+                  <div className="mt-3 pt-3 border-t border-slate-200">
+                    <button
+                      type="button"
+                      onClick={onSelectAll}
+                      className="text-xs font-semibold text-[#2563EB] hover:underline tabular-nums cursor-pointer"
+                    >
+                      Выбрать все категории (01–08)
+                    </button>
+                  </div>
+                )}
               </div>
+            )}
+          </div>
 
-              {/* Primary Telegram & Secondary WhatsApp Dispatch */}
-              <div className="mt-5 pt-4 border-t border-[#E2E8F0] flex flex-col gap-2.5 sm:flex-row sm:items-center">
+          {/* Right Column: Editable Request Example & Symmetrical Messenger Dispatch */}
+          <div className="lg:col-span-7 flex flex-col">
+            <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
+              <label
+                htmlFor="request-draft-textarea"
+                className="text-sm font-bold text-[#0F172A]"
+              >
+                Пример запроса
+              </label>
+
+              <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
-                  onClick={handleSendTelegram}
-                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#2563EB] px-5 py-3.5 text-sm sm:text-base font-bold text-white shadow-xs transition-colors hover:bg-[#1D4ED8] cursor-pointer"
+                  onClick={handlePasteFromClipboard}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-semibold text-[#0F172A] transition-colors hover:border-[#2563EB] hover:bg-blue-50/40 hover:text-[#2563EB] cursor-pointer"
                 >
-                  <Send className="h-4 w-4 shrink-0" aria-hidden="true" />
-                  <span>Отправить список в Telegram</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleSendWhatsApp}
-                  className="inline-flex sm:w-auto items-center justify-center gap-2 rounded-xl border border-[#E2E8F0] bg-[#FFFFFF] px-5 py-3.5 text-sm sm:text-base font-semibold text-[#0F172A] transition-colors hover:border-slate-300 hover:bg-slate-50 cursor-pointer"
-                >
-                  <MessageCircle
-                    className="h-4 w-4 shrink-0 text-[#16A34A]"
+                  <FileSpreadsheet
+                    className="h-3.5 w-3.5 text-[#2563EB]"
                     aria-hidden="true"
                   />
-                  <span>Отправить в WhatsApp</span>
+                  <span>Вставить из буфера / Excel</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={handleCopyDraftOnly}
-                  title="Скопировать текст в буфер обмена"
-                  aria-label="Скопировать текст запроса"
-                  className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] px-3.5 py-3.5 text-xs font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-100 cursor-pointer"
+                  className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-[#0F172A] cursor-pointer"
                 >
-                  <Copy className="h-4 w-4 shrink-0" aria-hidden="true" />
-                  <span className="sm:hidden">Скопировать текст</span>
+                  <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+                  <span>Скопировать</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleResetTemplate}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:text-[#0F172A] cursor-pointer"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
+                  <span>Сбросить к шаблону</span>
                 </button>
               </div>
-
-              <p className="mt-2.5 flex items-center gap-1.5 text-xs text-slate-500">
-                <ClipboardPaste className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-                <span>
-                  При нажатии текст также копируется в буфер обмена — фотографии
-                  и файлы ведомостей удобно прикрепить уже в открывшемся чате.
-                </span>
-              </p>
             </div>
+
+            <div className="relative">
+              <textarea
+                id="request-draft-textarea"
+                rows={7}
+                value={draftText}
+                onChange={(e) => {
+                  setIsManualDraft(true);
+                  setDraftText(e.target.value);
+                }}
+                onPaste={handleTextareaPaste}
+                placeholder="Опишите предлагаемые позиции и ориентировочное количество…"
+                className={`w-full rounded-xl border bg-white p-3.5 text-base leading-relaxed text-[#0F172A] outline-none transition-all duration-300 ${
+                  isHighlighted
+                    ? 'border-[#16A34A] ring-2 ring-[#16A34A]/20 bg-emerald-50/20'
+                    : 'border-slate-200 focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15'
+                }`}
+              />
+            </div>
+
+            {/* Quick Append Chips */}
+            <div className="mt-3">
+              <div className="mb-1.5 text-xs font-medium text-slate-500">
+                Быстрые уточнения к тексту:
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {config.quickChips.map((chip) => {
+                  const active = isQuickChipPresentInText(draftText, chip);
+                  return (
+                    <button
+                      key={chip}
+                      type="button"
+                      onClick={() => handleToggleQuickChip(chip)}
+                      aria-pressed={active}
+                      className={`inline-flex items-center gap-1 rounded-md border px-2.5 py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
+                        active
+                          ? 'border-[#2563EB] bg-blue-50 text-[#2563EB]'
+                          : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300 hover:bg-slate-100'
+                      }`}
+                    >
+                      {active && (
+                        <Check className="h-3 w-3 shrink-0" aria-hidden="true" />
+                      )}
+                      <span>{chip}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Unified Symmetrical 2-Column Messenger Dispatch */}
+            <div className="mt-5 pt-4 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={handleSendTelegram}
+                className="inline-flex h-12 w-full items-center justify-center gap-2.5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] px-5 text-sm font-bold text-white whitespace-nowrap shadow-xs transition-colors cursor-pointer"
+              >
+                <Send
+                  className="w-5 h-5 text-white shrink-0"
+                  aria-hidden="true"
+                />
+                <span>Отправить в Telegram</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSendWhatsApp}
+                className="inline-flex h-12 w-full items-center justify-center gap-2.5 rounded-xl bg-[#16A34A] hover:bg-[#15803D] px-5 text-sm font-bold text-white whitespace-nowrap shadow-xs transition-colors cursor-pointer"
+              >
+                <MessageCircle
+                  className="w-5 h-5 text-white shrink-0"
+                  aria-hidden="true"
+                />
+                <span>Отправить в WhatsApp</span>
+              </button>
+            </div>
+
+            <p className="mt-2.5 flex items-center gap-1.5 text-xs text-slate-500">
+              <ClipboardPaste className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+              <span>
+                При нажатии текст также копируется в буфер обмена — фотографии и
+                файлы ведомостей удобно прикрепить уже в открывшемся чате.
+              </span>
+            </p>
           </div>
         </div>
       </section>
 
-      {/* Floating Scroll Pill when positions selected and RequestBuilder is off-screen */}
+      {/* Floating Scroll Indicator when positions selected and RequestBuilder is off-screen */}
       {selectedPositions.length >= 1 && !isBuilderInView && (
         <div className="fixed inset-x-0 bottom-20 md:bottom-6 z-40 flex justify-center px-4 pointer-events-none print:hidden">
           <button
             type="button"
             onClick={scrollToBuilder}
-            className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-[#0F172A] px-5 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-lg tabular-nums transition-transform hover:scale-[1.02] hover:bg-[#1E293B] cursor-pointer"
+            className="pointer-events-auto inline-flex items-center gap-2 px-4 py-2.5 rounded-md border border-slate-700 bg-[#0F172A] text-xs sm:text-sm font-semibold text-white shadow-lg tabular-nums transition-colors hover:bg-slate-800 cursor-pointer"
           >
-            <span className="h-2 w-2 rounded-full bg-[#16A34A]" aria-hidden="true" />
+            <span
+              className="h-2 w-2 rounded-[2px] bg-[#16A34A]"
+              aria-hidden="true"
+            />
             <span>
               Выбрано: {selectedPositions.length} поз. — Перейти к отправке ↓
             </span>

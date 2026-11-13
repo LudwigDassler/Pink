@@ -81,7 +81,6 @@ export function App(): React.JSX.Element {
     };
   }, []);
 
-  // Persist selectedPositions in localStorage
   useEffect(() => {
     try {
       window.localStorage.setItem(
@@ -93,7 +92,6 @@ export function App(): React.JSX.Element {
     }
   }, [selectedPositions]);
 
-  // Keep selectedPositions aligned if categories are deleted in live CMS
   useEffect(() => {
     const validIds = new Set(config.categories.map((c) => c.id));
     setSelectedPositions((prev) => {
@@ -102,7 +100,6 @@ export function App(): React.JSX.Element {
     });
   }, [config.categories]);
 
-  // Sync SPA hash navigation while keeping ?edit=1 query intact
   useEffect(() => {
     const handleLocationSync = (): void => {
       const nextTab = parseHashToTab(window.location.hash);
@@ -227,9 +224,9 @@ export function App(): React.JSX.Element {
           showToast={showToast}
         />
 
-        <main className="flex-1 pb-24 md:pb-12">
+        <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-28 md:pb-12">
           {activeTab === 'main' && (
-            <>
+            <div className="space-y-6">
               <HeroSection
                 config={config}
                 onScrollToCatalog={() => scrollToElement('catalog')}
@@ -252,7 +249,7 @@ export function App(): React.JSX.Element {
                 onOpenModal={setActiveModalCategoryId}
                 showToast={showToast}
               />
-            </>
+            </div>
           )}
 
           {activeTab === 'terms' && (
@@ -300,12 +297,11 @@ export function App(): React.JSX.Element {
           showToast={showToast}
         />
 
-        {/* Toast notification */}
         {toastMessage && (
           <div
             role="status"
             aria-live="polite"
-            className="fixed top-20 right-4 left-4 sm:left-auto z-[60] sm:max-w-sm bg-[#0F172A] text-white rounded-xl px-4 py-3 shadow-lg border border-[#334155] flex items-center gap-2.5 text-xs sm:text-sm font-semibold print:hidden"
+            className="fixed top-20 right-4 left-4 sm:left-auto z-[60] sm:max-w-sm bg-[#0F172A] text-white rounded-xl px-4 py-3 shadow-lg border border-slate-700 flex items-center gap-2.5 text-xs sm:text-sm font-semibold print:hidden"
           >
             <CheckCircle2 className="w-4 h-4 text-[#16A34A] shrink-0" />
             <span className="break-words">{toastMessage}</span>
@@ -313,7 +309,6 @@ export function App(): React.JSX.Element {
         )}
       </div>
 
-      {/* Dedicated clean 1-page A4 print sheet */}
       <OfficialPrintSheet config={config} />
     </>
   );

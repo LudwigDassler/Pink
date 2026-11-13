@@ -10,7 +10,6 @@
     background-color: #f8fafc;
     color: #0f172a;
     scroll-behavior: smooth;
-    -webkit-text-size-adjust: 100%;
     overflow-x: clip;
   }
 
@@ -37,12 +36,12 @@
   -webkit-mask-image: radial-gradient(
     ellipse 84% 78% at 50% 44%,
     #000000 38%,
-    transparent 100%
+    transparent 98%
   );
   mask-image: radial-gradient(
     ellipse 84% 78% at 50% 44%,
     #000000 38%,
-    transparent 100%
+    transparent 98%
   );
 }
 
