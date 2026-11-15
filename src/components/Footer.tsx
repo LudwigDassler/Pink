@@ -1,5 +1,6 @@
 import React from 'react';
 import type { SiteConfig } from '../config/siteConfig';
+import { trackGoal } from '../utils/analytics';
 import type { TabId } from './Header';
 
 export interface FooterProps {
@@ -32,6 +33,7 @@ export function Footer({
               {config.guaranteeText} ·{' '}
               <a
                 href={config.phoneTel}
+                onClick={() => trackGoal('click_phone')}
                 className="font-semibold text-[#0F172A] hover:text-[#2563EB] tabular-nums whitespace-nowrap"
               >
                 {config.phoneDisplay}
@@ -68,10 +70,10 @@ export function Footer({
 
         <div className="pt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-500">
           <span>
-            Информационный запрос отдела закупки промышленного оборудования и материалов. Не является публичной офертой.
+            Информационный запрос на закупку промышленного оборудования и материалов. Не является публичной офертой.
           </span>
           <span className="tabular-nums whitespace-nowrap text-slate-500">
-            © 2026 Отдел закупки
+            © 2026 {config.brandName} · {config.brandSubtitle}
           </span>
         </div>
       </div>

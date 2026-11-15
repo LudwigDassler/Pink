@@ -1,7 +1,8 @@
 import React from 'react';
 import { Copy, LogOut, RotateCcw, Settings2, Trash2 } from 'lucide-react';
 import {
-  deriveContactLinks,
+  derivePhoneTel,
+  deriveWhatsAppUrl,
   serializeSiteConfigToTs,
   type CategoryItem,
   type SiteConfig,
@@ -30,13 +31,18 @@ export function AdminConfigDrawer({
   }
 
   const handlePhoneChange = (nextPhoneDisplay: string) => {
-    const derived = deriveContactLinks(nextPhoneDisplay);
     onChangeConfig({
       ...config,
       phoneDisplay: nextPhoneDisplay,
-      phoneTel: derived.phoneTel,
-      telegramUrl: derived.telegramUrl,
-      whatsappUrl: derived.whatsappUrl,
+      phoneTel: derivePhoneTel(nextPhoneDisplay),
+    });
+  };
+
+  const handleWhatsAppPhoneChange = (nextWhatsAppPhone: string) => {
+    onChangeConfig({
+      ...config,
+      whatsappPhone: nextWhatsAppPhone,
+      whatsappUrl: deriveWhatsAppUrl(nextWhatsAppPhone),
     });
   };
 
@@ -87,6 +93,7 @@ export function AdminConfigDrawer({
       code: `КАТ. ${padded}`,
       title: 'Новая категория оборудования',
       icon: 'generic',
+      image: `/images/cat-${padded}.jpg`,
       placeholder: 'Например: 10 шт. или 1 партия',
     };
 
@@ -124,7 +131,7 @@ export function AdminConfigDrawer({
             <Settings2 className="h-4 w-4" aria-hidden="true" />
           </div>
           <h2 className="truncate text-sm sm:text-base font-bold">
-            Быстрая настройка сайта
+            Настройка сайта «{config.brandName}»
           </h2>
         </div>
 
@@ -139,45 +146,143 @@ export function AdminConfigDrawer({
         </button>
       </div>
 
-      {/* Simplified Editor Body: Only Phone, Title, and Categories */}
+      {/* Scrollable Editor Body */}
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 bg-slate-50">
-        {/* 1. Phone */}
-        <section className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 space-y-2">
-          <label
-            htmlFor="cms-phone-display"
-            className="block text-sm font-bold text-[#0F172A]"
-          >
-            Телефон
-          </label>
-          <input
-            id="cms-phone-display"
-            type="text"
-            value={config.phoneDisplay}
-            onChange={(e) => handlePhoneChange(e.target.value)}
-            className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-base font-semibold text-[#0F172A] tabular-nums whitespace-nowrap outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15"
-          />
-          <p className="text-xs text-slate-500">
-            Ссылки для звонка, Telegram и WhatsApp обновляются автоматически.
-          </p>
+        {/* 1. Brand Name & Subtitle + Hero Title */}
+        <section className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 space-y-3.5">
+          <div>
+            <label
+              htmlFor="cms-brand-name"
+              className="mb-1 block text-sm font-bold text-[#0F172A]"
+            >
+              Название
+            </label>
+            <input
+              id="cms-brand-name"
+              type="text"
+              value={config.brandName}
+              onChange={(e) =>
+                onChangeConfig({ ...config, brandName: e.target.value })
+              }
+              className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-base font-semibold text-[#0F172A] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="cms-brand-subtitle"
+              className="mb-1 block text-xs font-semibold text-slate-600"
+            >
+              Подпись к названию
+            </label>
+            <input
+              id="cms-brand-subtitle"
+              type="text"
+              value={config.brandSubtitle}
+              onChange={(e) =>
+                onChangeConfig({ ...config, brandSubtitle: e.target.value })
+              }
+              className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-base text-[#0F172A] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="cms-hero-title"
+              className="mb-1 block text-xs font-semibold text-slate-600"
+            >
+              Заголовок на главной
+            </label>
+            <textarea
+              id="cms-hero-title"
+              rows={2}
+              value={config.heroTitle}
+              onChange={(e) =>
+                onChangeConfig({ ...config, heroTitle: e.target.value })
+              }
+              className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-base text-[#0F172A] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15"
+            />
+          </div>
         </section>
 
-        {/* 2. Title */}
-        <section className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 space-y-2">
-          <label
-            htmlFor="cms-hero-title"
-            className="block text-sm font-bold text-[#0F172A]"
-          >
-            Заголовок
-          </label>
-          <textarea
-            id="cms-hero-title"
-            rows={3}
-            value={config.heroTitle}
-            onChange={(e) =>
-              onChangeConfig({ ...config, heroTitle: e.target.value })
-            }
-            className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-base text-[#0F172A] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15"
-          />
+        {/* 2. Phone, MAX URL, WhatsApp Phone & Yandex Metrika ID */}
+        <section className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 space-y-3.5">
+          <div>
+            <label
+              htmlFor="cms-phone-display"
+              className="mb-1 block text-sm font-bold text-[#0F172A]"
+            >
+              Телефон
+            </label>
+            <input
+              id="cms-phone-display"
+              type="text"
+              value={config.phoneDisplay}
+              onChange={(e) => handlePhoneChange(e.target.value)}
+              className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-base font-semibold text-[#0F172A] tabular-nums whitespace-nowrap outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="cms-max-url"
+              className="mb-1 block text-sm font-bold text-[#0F172A]"
+            >
+              Прямая ссылка на MAX
+            </label>
+            <input
+              id="cms-max-url"
+              type="url"
+              value={config.maxUrl}
+              onChange={(e) =>
+                onChangeConfig({ ...config, maxUrl: e.target.value })
+              }
+              placeholder="https://max.ru/u/..."
+              className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-base text-[#0F172A] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label
+                htmlFor="cms-whatsapp-phone"
+                className="mb-1 block text-sm font-bold text-[#0F172A]"
+              >
+                Номер WhatsApp
+              </label>
+              <input
+                id="cms-whatsapp-phone"
+                type="text"
+                value={config.whatsappPhone}
+                onChange={(e) => handleWhatsAppPhoneChange(e.target.value)}
+                placeholder="79810388903"
+                className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-base text-[#0F172A] tabular-nums outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="cms-metrika-id"
+                className="mb-1 block text-sm font-bold text-[#0F172A]"
+              >
+                ID Яндекс Метрики
+              </label>
+              <input
+                id="cms-metrika-id"
+                type="text"
+                inputMode="numeric"
+                value={config.yandexMetrikaId}
+                onChange={(e) =>
+                  onChangeConfig({
+                    ...config,
+                    yandexMetrikaId: e.target.value.replace(/\D/g, ''),
+                  })
+                }
+                placeholder="Например: 98765432"
+                className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-base text-[#0F172A] tabular-nums outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15"
+              />
+            </div>
+          </div>
         </section>
 
         {/* 3. Categories List */}
@@ -227,24 +332,41 @@ export function AdminConfigDrawer({
                     onChange={(e) =>
                       handleCategoryChange(idx, { title: e.target.value })
                     }
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base text-[#0F172A] outline-none focus:border-[#2563EB]"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-base text-[#0F172A] outline-none focus:border-[#2563EB]"
                   />
                 </div>
 
-                <div>
-                  <label className="mb-1 block text-[11px] font-semibold text-slate-600">
-                    Пример заполнения (подсказка в поле)
-                  </label>
-                  <input
-                    type="text"
-                    value={cat.placeholder}
-                    onChange={(e) =>
-                      handleCategoryChange(idx, {
-                        placeholder: e.target.value,
-                      })
-                    }
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base text-[#0F172A] outline-none focus:border-[#2563EB]"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="mb-1 block text-[11px] font-semibold text-slate-600">
+                      Подсказка в поле ввода
+                    </label>
+                    <input
+                      type="text"
+                      value={cat.placeholder}
+                      onChange={(e) =>
+                        handleCategoryChange(idx, {
+                          placeholder: e.target.value,
+                        })
+                      }
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-base text-[#0F172A] outline-none focus:border-[#2563EB]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-[11px] font-semibold text-slate-600">
+                      Путь к фото (public)
+                    </label>
+                    <input
+                      type="text"
+                      value={cat.image}
+                      onChange={(e) =>
+                        handleCategoryChange(idx, { image: e.target.value })
+                      }
+                      placeholder="/images/cat-01.jpg"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-base text-[#0F172A] tabular-nums outline-none focus:border-[#2563EB]"
+                    />
+                  </div>
                 </div>
               </div>
             ))}

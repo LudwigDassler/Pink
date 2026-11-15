@@ -5,10 +5,8 @@ import {
   Copy,
   FileSpreadsheet,
   ListChecks,
-  MessageCircle,
   Pencil,
   RotateCcw,
-  Send,
   Trash2,
 } from 'lucide-react';
 import type {
@@ -16,18 +14,21 @@ import type {
   SelectedPosition,
   SiteConfig,
 } from '../config/siteConfig';
+import { trackGoal } from '../utils/analytics';
 import {
   REQUEST_DRAFT_STORAGE_KEY,
   appendLinesToRequestText,
   buildRequestTemplate,
   copyTextToClipboard,
-  dispatchToMessenger,
+  dispatchToMax,
+  dispatchToWhatsApp,
   extractActiveQuickChips,
   isQuickChipPresentInText,
   parseClipboardTableToLines,
   syncCustomDraftWithPositions,
   toggleQuickChipInText,
 } from '../utils/requestHelpers';
+import { MaxIcon, WhatsAppIcon } from './MessengerIcons';
 
 export interface RequestBuilderProps {
   config: SiteConfig;
@@ -319,25 +320,24 @@ export function RequestBuilder({
     triggerHighlight();
   };
 
-  const handleSendTelegram = () => {
-    dispatchToMessenger({
-      baseUrl: config.telegramUrl,
+  const handleSendMax = () => {
+    dispatchToMax({
+      maxUrl: config.maxUrl,
       text: requestText,
-      toastMessage: 'Текст скопирован — открываем Telegram',
       showToast,
     });
   };
 
   const handleSendWhatsApp = () => {
-    dispatchToMessenger({
-      baseUrl: config.whatsappUrl,
+    dispatchToWhatsApp({
+      whatsappUrl: config.whatsappUrl,
       text: requestText,
-      toastMessage: 'Текст скопирован — открываем WhatsApp',
       showToast,
     });
   };
 
   const handleCopyTextOnly = async () => {
+    trackGoal('copy_request');
     const ok = await copyTextToClipboard(requestText.trim());
     showToast(
       ok
@@ -405,9 +405,9 @@ export function RequestBuilder({
                 список строк.
               </p>
               <p>
-                3. При нажатии на кнопку мессенджера текст копируется в буфер
-                обмена — фотографии бирок и файлы ведомостей удобно прикрепить
-                уже в открывшемся диалоге.
+                3. При выборе MAX или WhatsApp текст заявки автоматически
+                копируется в буфер обмена — вставьте его в открывшемся чате и
+                прикрепите фотографии бирок или ведомость остатков.
               </p>
             </div>
           )}
@@ -691,18 +691,15 @@ export function RequestBuilder({
               </div>
             )}
 
-            {/* Unified Symmetrical 2-Column Messenger Dispatch */}
+            {/* Unified Symmetrical 2-Column Messenger Dispatch (MAX + WhatsApp) */}
             <div className="mt-5 pt-4 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button
                 type="button"
-                onClick={handleSendTelegram}
+                onClick={handleSendMax}
                 className="inline-flex h-12 w-full items-center justify-center gap-2.5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] px-5 text-sm font-bold text-white whitespace-nowrap shadow-xs transition-colors cursor-pointer"
               >
-                <Send
-                  className="w-5 h-5 text-white shrink-0"
-                  aria-hidden="true"
-                />
-                <span>Отправить в Telegram</span>
+                <MaxIcon className="w-5 h-5 text-white shrink-0" />
+                <span>Отправить в MAX</span>
               </button>
 
               <button
@@ -710,10 +707,7 @@ export function RequestBuilder({
                 onClick={handleSendWhatsApp}
                 className="inline-flex h-12 w-full items-center justify-center gap-2.5 rounded-xl bg-[#16A34A] hover:bg-[#15803D] px-5 text-sm font-bold text-white whitespace-nowrap shadow-xs transition-colors cursor-pointer"
               >
-                <MessageCircle
-                  className="w-5 h-5 text-white shrink-0"
-                  aria-hidden="true"
-                />
+                <WhatsAppIcon className="w-5 h-5 text-white shrink-0" />
                 <span>Отправить в WhatsApp</span>
               </button>
             </div>

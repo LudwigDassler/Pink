@@ -5,6 +5,7 @@ import {
   type SelectedPosition,
   type SiteConfig,
 } from './config/siteConfig';
+import { setActiveMetrikaId } from './utils/analytics';
 import { Header, type TabId } from './components/Header';
 import { HeroSection } from './components/HeroSection';
 import { CatalogGrid } from './components/CatalogGrid';
@@ -89,6 +90,10 @@ export function App(): React.JSX.Element {
       }
     };
   }, []);
+
+  useEffect(() => {
+    setActiveMetrikaId(config.yandexMetrikaId);
+  }, [config.yandexMetrikaId]);
 
   useEffect(() => {
     try {

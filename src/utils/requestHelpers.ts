@@ -3,6 +3,7 @@ import type {
   SelectedPosition,
   SiteConfig,
 } from '../config/siteConfig';
+import { trackGoal } from './analytics';
 
 export const REQUEST_DRAFT_STORAGE_KEY = 'b2b_request_draft_v1';
 
@@ -53,33 +54,54 @@ export async function copyTextToClipboard(text: string): Promise<boolean> {
   return copyTextFallbackSync(text);
 }
 
-export function buildMessengerShareUrl(baseUrl: string, text: string): string {
+function copyTextImmediate(text: string): void {
+  if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(text).catch(() => {
+      copyTextFallbackSync(text);
+    });
+  } else {
+    copyTextFallbackSync(text);
+  }
+}
+
+export function buildWhatsAppShareUrl(baseUrl: string, text: string): string {
   const cleanBase = baseUrl.trim();
   const separator = cleanBase.includes('?') ? '&' : '?';
   return `${cleanBase}${separator}text=${encodeURIComponent(text)}`;
 }
 
-export function dispatchToMessenger(params: {
-  baseUrl: string;
+export function dispatchToMax(params: {
+  maxUrl: string;
   text: string;
-  toastMessage: string;
   showToast: (message: string) => void;
 }): void {
-  const { baseUrl, text, toastMessage, showToast } = params;
+  const { maxUrl, text, showToast } = params;
   const finalText = text.trim();
-  const targetUrl = buildMessengerShareUrl(baseUrl, finalText);
+  const targetUrl = maxUrl.trim();
 
-  if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
-    navigator.clipboard.writeText(finalText).catch(() => {
-      copyTextFallbackSync(finalText);
-    });
-  } else {
-    copyTextFallbackSync(finalText);
+  copyTextImmediate(finalText);
+  trackGoal('click_max');
+  showToast('Текст заявки скопирован — вставьте его в открывшемся чате MAX');
+
+  if (typeof window !== 'undefined' && targetUrl) {
+    window.open(targetUrl, '_blank', 'noopener,noreferrer');
   }
+}
 
-  showToast(toastMessage);
+export function dispatchToWhatsApp(params: {
+  whatsappUrl: string;
+  text: string;
+  showToast: (message: string) => void;
+}): void {
+  const { whatsappUrl, text, showToast } = params;
+  const finalText = text.trim();
+  const targetUrl = buildWhatsAppShareUrl(whatsappUrl, finalText);
 
-  if (typeof window !== 'undefined') {
+  copyTextImmediate(finalText);
+  trackGoal('click_whatsapp');
+  showToast('Текст скопирован — открываем WhatsApp');
+
+  if (typeof window !== 'undefined' && targetUrl) {
     window.open(targetUrl, '_blank', 'noopener,noreferrer');
   }
 }
@@ -166,7 +188,6 @@ export function toggleQuickChipInText(text: string, chip: string): string {
     return collapseBlankLines(updated.join('\n'));
   }
 
-  // Also check if user had it as a standalone bullet line
   const standaloneIndex = lines.findIndex((line) => {
     const stripped = line
       .trim()

@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import type * as React from 'react';
-import { Scale, ShieldCheck, ChevronDown, Phone, Send, MessageCircle } from 'lucide-react';
+import { Scale, ShieldCheck, ChevronDown, Phone } from 'lucide-react';
 import type { SiteConfig } from '../config/siteConfig';
+import { trackGoal } from '../utils/analytics';
+import { MaxIcon, WhatsAppIcon } from './MessengerIcons';
 
 export function LegalSection({ config }: { config: SiteConfig }): React.JSX.Element {
   const [isOfferDetailsOpen, setIsOfferDetailsOpen] = useState<boolean>(false);
@@ -13,7 +15,7 @@ export function LegalSection({ config }: { config: SiteConfig }): React.JSX.Elem
       <div className="bg-white border border-slate-200 rounded-xl p-6 sm:p-8">
         <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md border border-slate-200 bg-slate-50 text-xs font-bold tracking-wider text-[#2563EB] uppercase mb-3">
           <Scale className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-          <span>Правовой регламент ресурса</span>
+          <span>{config.brandName} · Правовой регламент</span>
         </div>
         <h1
           id="legal-heading"
@@ -22,8 +24,8 @@ export function LegalSection({ config }: { config: SiteConfig }): React.JSX.Elem
           Правовая информация
         </h1>
         <p className="mt-2.5 text-sm sm:text-base text-slate-600 leading-relaxed max-w-3xl break-words">
-          Правила использования информационного ресурса по закупке неликвидов, складских остатков и
-          б/у промышленного оборудования и материалов.
+          Правила использования информационного ресурса {config.brandName} по выкупу неликвидов,
+          складских остатков и б/у промышленного оборудования и материалов.
         </p>
       </div>
 
@@ -44,11 +46,11 @@ export function LegalSection({ config }: { config: SiteConfig }): React.JSX.Elem
         </div>
 
         <p className="text-sm sm:text-base text-slate-700 leading-relaxed break-words">
-          Материалы данного сайта, включая перечень закупаемых товарных групп (категории{' '}
-          <span className="tabular-nums">01–08</span>) и описание условий взаимодействия, носят
-          информационно-справочный характер приглашения направлять предложения и не являются
-          публичной офертой в понимании статьи <span className="tabular-nums">437</span>{' '}
-          Гражданского кодекса Российской Федерации.
+          Материалы ресурса {config.brandName}, включая перечень закупаемых товарных групп
+          (категории <span className="tabular-nums">01–08</span>) и описание условий
+          взаимодействия, носят информационно-справочный характер приглашения направлять предложения
+          и не являются публичной офертой в понимании статьи{' '}
+          <span className="tabular-nums">437</span> Гражданского кодекса Российской Федерации.
         </p>
 
         <div className="mt-4">
@@ -86,8 +88,8 @@ export function LegalSection({ config }: { config: SiteConfig }): React.JSX.Elem
                 </h3>
                 <p className="text-sm text-slate-700 leading-relaxed break-words">
                   Параметры взаимодействия ({config.guaranteeText}) согласуются индивидуально после
-                  рассмотрения направленного перечня и фотографий оборудования со специалистом
-                  отдела закупки.
+                  рассмотрения направленного перечня и фотографий оборудования со специалистами{' '}
+                  {config.brandName}.
                 </p>
               </div>
             </div>
@@ -112,8 +114,8 @@ export function LegalSection({ config }: { config: SiteConfig }): React.JSX.Elem
         </div>
 
         <p className="text-sm sm:text-base text-slate-700 leading-relaxed break-words">
-          Сайт работает без регистрации посетителей, личных кабинетов, серверных анкет обратной
-          связи и сторонних рекламных счётчиков в соответствии с Федеральным законом от{' '}
+          Сайт {config.brandName} работает без регистрации посетителей, личных кабинетов и серверных
+          анкет сбора персональных сведений в соответствии с Федеральным законом от{' '}
           <span className="tabular-nums">27.07.2006</span> №{' '}
           <span className="tabular-nums">152-ФЗ</span> «О персональных данных».
         </p>
@@ -152,16 +154,17 @@ export function LegalSection({ config }: { config: SiteConfig }): React.JSX.Elem
                   Добровольное обращение по прямым контактам
                 </h3>
                 <p className="text-sm text-slate-700 leading-relaxed break-words">
-                  Связь с отделом закупки инициируется пользователем самостоятельно и добровольно —
-                  звонком по номеру{' '}
+                  Связь со специалистами {config.brandName} инициируется пользователем самостоятельно
+                  и добровольно — звонком по номеру{' '}
                   <a
                     href={config.phoneTel}
+                    onClick={() => trackGoal('click_phone')}
                     className="font-semibold text-[#2563EB] hover:underline tabular-nums whitespace-nowrap"
                   >
                     {config.phoneDisplay}
                   </a>{' '}
-                  либо направлением перечня в мессенджеры Telegram и WhatsApp исключительно для
-                  оценки предложения о продаже оборудования.
+                  либо направлением перечня в мессенджеры MAX и WhatsApp исключительно для оценки
+                  предложения о продаже оборудования.
                 </p>
               </div>
             </div>
@@ -182,27 +185,30 @@ export function LegalSection({ config }: { config: SiteConfig }): React.JSX.Elem
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <a
-            href={config.telegramUrl}
+            href={config.maxUrl}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackGoal('click_max')}
             className="inline-flex h-12 items-center justify-center gap-2.5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] px-5 text-sm font-bold text-white whitespace-nowrap transition-colors"
           >
-            <Send className="w-5 h-5 text-white shrink-0" aria-hidden="true" />
-            <span>Написать в Telegram</span>
+            <MaxIcon className="w-5 h-5 text-white shrink-0" />
+            <span>Написать в MAX</span>
           </a>
 
           <a
             href={config.whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackGoal('click_whatsapp')}
             className="inline-flex h-12 items-center justify-center gap-2.5 rounded-xl bg-[#16A34A] hover:bg-[#15803D] px-5 text-sm font-bold text-white whitespace-nowrap transition-colors"
           >
-            <MessageCircle className="w-5 h-5 text-white shrink-0" aria-hidden="true" />
+            <WhatsAppIcon className="w-5 h-5 text-white shrink-0" />
             <span>Написать в WhatsApp</span>
           </a>
 
           <a
             href={config.phoneTel}
+            onClick={() => trackGoal('click_phone')}
             className="inline-flex h-12 items-center justify-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 px-5 text-sm font-bold text-[#0F172A] tabular-nums whitespace-nowrap transition-colors"
           >
             <Phone className="w-5 h-5 text-[#2563EB] shrink-0" aria-hidden="true" />

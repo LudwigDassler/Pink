@@ -1,7 +1,9 @@
 import React, { useEffect, useRef } from 'react';
-import { Copy, MessageCircle, Phone, Send, UserPlus } from 'lucide-react';
+import { Copy, Phone, UserPlus } from 'lucide-react';
 import type { SiteConfig } from '../config/siteConfig';
+import { trackGoal } from '../utils/analytics';
 import { copyTextSafe } from './Header';
+import { MaxIcon, WhatsAppIcon } from './MessengerIcons';
 import { QrCodeSvg } from './QrCodeSvg';
 
 export interface ContactsSectionProps {
@@ -25,6 +27,7 @@ export function ContactsSection({
 
   const handleCopyPhone = async (): Promise<void> => {
     await copyTextSafe(config.phoneDisplay);
+    trackGoal('copy_phone');
     showToast('Номер скопирован');
   };
 
@@ -33,11 +36,12 @@ export function ContactsSection({
     const vcardContent = [
       'BEGIN:VCARD',
       'VERSION:3.0',
-      'FN:Отдел закупки неликвидов и оборудования',
-      'N:;Отдел закупки неликвидов и оборудования;;;',
-      'TITLE:Отдел закупки неликвидов и оборудования',
+      `FN:${config.brandName}`,
+      `N:;${config.brandName};;;`,
+      `ORG:${config.brandName}`,
+      `TITLE:${config.brandSubtitle}`,
       `TEL;TYPE=CELL:${rawTel}`,
-      `URL:${config.telegramUrl}`,
+      `URL:${config.maxUrl}`,
       `NOTE:${config.politeClosing}`,
       'END:VCARD',
     ].join('\r\n');
@@ -48,7 +52,7 @@ export function ContactsSection({
     const objectUrl = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = objectUrl;
-    link.download = 'otdel-zakupki.vcf';
+    link.download = 'promvykup.vcf';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -89,6 +93,7 @@ export function ContactsSection({
               </div>
               <a
                 href={config.phoneTel}
+                onClick={() => trackGoal('click_phone')}
                 className="mt-1 inline-block text-2xl sm:text-3xl font-extrabold text-[#0F172A] hover:text-[#2563EB] transition-colors tabular-nums whitespace-nowrap"
               >
                 {config.phoneDisplay}
@@ -98,6 +103,7 @@ export function ContactsSection({
             <div className="flex flex-wrap items-center gap-2.5">
               <a
                 href={config.phoneTel}
+                onClick={() => trackGoal('click_phone')}
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-white hover:bg-slate-100 text-[#0F172A] border border-slate-200 px-5 text-sm font-bold whitespace-nowrap transition-colors"
               >
                 <Phone className="w-4 h-4 text-[#16A34A] shrink-0" aria-hidden="true" />
@@ -115,25 +121,27 @@ export function ContactsSection({
             </div>
           </div>
 
-          {/* Symmetrical Messenger Buttons: Telegram & WhatsApp */}
+          {/* Symmetrical Messenger Buttons: MAX & WhatsApp */}
           <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
             <a
-              href={config.telegramUrl}
+              href={config.maxUrl}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackGoal('click_max')}
               className="inline-flex h-12 items-center justify-center gap-2.5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] px-5 text-sm font-bold text-white whitespace-nowrap transition-colors"
             >
-              <Send className="w-5 h-5 text-white shrink-0" aria-hidden="true" />
-              <span>Написать в Telegram</span>
+              <MaxIcon className="w-5 h-5 text-white shrink-0" />
+              <span>Написать в MAX</span>
             </a>
 
             <a
               href={config.whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackGoal('click_whatsapp')}
               className="inline-flex h-12 items-center justify-center gap-2.5 rounded-xl bg-[#16A34A] hover:bg-[#15803D] px-5 text-sm font-bold text-white whitespace-nowrap transition-colors"
             >
-              <MessageCircle className="w-5 h-5 text-white shrink-0" aria-hidden="true" />
+              <WhatsAppIcon className="w-5 h-5 text-white shrink-0" />
               <span>Написать в WhatsApp</span>
             </a>
           </div>
@@ -142,7 +150,7 @@ export function ContactsSection({
         {/* vCard download */}
         <div className="mt-6 pt-5 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <span className="text-xs sm:text-sm text-slate-500 break-words">
-            Сохраните карточку отдела закупки в адресную книгу смартфона одним нажатием:
+            Сохраните карточку «{config.brandName}» в адресную книгу смартфона одним нажатием:
           </span>
           <button
             type="button"
@@ -155,26 +163,26 @@ export function ContactsSection({
         </div>
       </section>
 
-      {/* Desktop Telegram QR block */}
+      {/* Desktop MAX QR block */}
       <aside className="hidden md:flex lg:col-span-4 bg-white border border-slate-200 rounded-xl p-6 sm:p-8 flex-col items-center justify-between text-center">
         <div>
           <div className="inline-flex items-center px-2.5 py-1 rounded-md border border-slate-200 bg-slate-50 text-xs font-bold uppercase tracking-wider text-[#2563EB]">
             Быстрый переход
           </div>
           <h2 className="mt-2.5 text-lg font-extrabold text-[#0F172A]">
-            Telegram на телефоне
+            MAX на телефоне
           </h2>
           <p className="mt-1.5 text-xs sm:text-sm text-slate-600 leading-relaxed">
-            Наведите камеру смартфона на QR-код, чтобы сразу открыть чат и отправить фото со склада.
+            Наведите камеру смартфона на QR-код, чтобы сразу открыть чат в MAX и отправить фото со склада.
           </p>
         </div>
 
         <div className="my-6 p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center">
-          <QrCodeSvg url={config.telegramUrl} size={172} />
+          <QrCodeSvg url={config.maxUrl} size={172} />
         </div>
 
         <div className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-xs text-slate-600 tabular-nums break-all">
-          {config.telegramUrl}
+          {config.maxUrl}
         </div>
       </aside>
     </div>

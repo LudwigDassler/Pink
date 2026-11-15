@@ -167,7 +167,7 @@ export function TermsSection({
 
         {isPrintInfoOpen && (
           <p className="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs sm:text-sm text-slate-600 leading-relaxed break-words">
-            Одностраничный лист формата A4 включает полный перечень закупаемых категорий с полями для отметок и прямые контактные данные отдела закупки для удобного согласования внутри предприятия.
+            Одностраничный лист формата A4 включает полный перечень закупаемых категорий с полями для отметок и прямые контактные данные «{config.brandName}» для удобного согласования внутри предприятия.
           </p>
         )}
       </section>
@@ -184,8 +184,8 @@ export function OfficialPrintSheet({
     <div className="hidden print:block print-sheet w-full bg-white text-[#0F172A]">
       <div className="flex items-start justify-between border-b-2 border-[#0F172A] pb-3 mb-4">
         <div>
-          <div className="text-[10pt] font-bold uppercase tracking-wider text-slate-600">
-            Официальный запрос отдела закупки
+          <div className="text-[10.5pt] font-extrabold uppercase tracking-wider text-[#0F172A]">
+            {config.brandName} — {config.brandSubtitle}
           </div>
           <div className="text-[9.5pt] text-slate-600 mt-0.5">
             Промышленное оборудование и складские остатки
@@ -196,7 +196,7 @@ export function OfficialPrintSheet({
             {config.phoneDisplay}
           </div>
           <div className="text-[9pt] text-slate-600">
-            Telegram / WhatsApp
+            MAX / WhatsApp
           </div>
         </div>
       </div>
@@ -265,7 +265,7 @@ export function OfficialPrintSheet({
       </div>
 
       <div className="flex items-center justify-between gap-4 pt-3 border-t border-slate-300">
-        <div className="space-y-1">
+        <div className="space-y-1 min-w-0">
           <div className="text-[10.5pt] font-bold text-[#0F172A]">
             {config.politeClosing}
           </div>
@@ -275,14 +275,14 @@ export function OfficialPrintSheet({
               {config.phoneDisplay}
             </strong>
           </div>
-          <div className="text-[9pt] text-slate-700 tabular-nums">
-            Telegram: {config.telegramUrl} &nbsp;|&nbsp; WhatsApp: {config.whatsappUrl}
+          <div className="text-[8.5pt] text-slate-700 tabular-nums break-all">
+            MAX: {config.maxUrl} | WhatsApp: {config.whatsappUrl}
           </div>
         </div>
 
         <div className="shrink-0 flex flex-col items-center">
-          <QrCodeSvg url={config.telegramUrl} size={74} />
-          <span className="text-[7.5pt] text-slate-600 mt-0.5">Telegram</span>
+          <QrCodeSvg url={config.maxUrl} size={74} />
+          <span className="text-[7.5pt] text-slate-600 mt-0.5 font-semibold">MAX</span>
         </div>
       </div>
     </div>

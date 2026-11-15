@@ -14,6 +14,7 @@ export interface CategoryItem {
   code: string;
   title: string;
   icon: CategoryIconKey;
+  image: string;
   placeholder: string;
 }
 
@@ -36,10 +37,14 @@ export interface GuaranteeCardItem {
 }
 
 export interface SiteConfig {
+  brandName: string;
+  brandSubtitle: string;
   phoneDisplay: string;
   phoneTel: string;
-  telegramUrl: string;
+  maxUrl: string;
+  whatsappPhone: string;
   whatsappUrl: string;
+  yandexMetrikaId: string;
   schedule: string;
   heroTitle: string;
   guaranteeText: string;
@@ -52,10 +57,15 @@ export interface SiteConfig {
 }
 
 export const SITE_CONFIG: SiteConfig = {
+  brandName: 'ПромВыкуп',
+  brandSubtitle: 'Выкуп неликвидов и б/у оборудования',
   phoneDisplay: '8 (981) 038-89-03',
   phoneTel: 'tel:+79810388903',
-  telegramUrl: 'https://t.me/+79810388903',
+  maxUrl:
+    'https://max.ru/u/f9LHodD0cOJQ3IGdRdY7kD3F2ODJYP4Vx4bpsa_IwEiUTGgnbAa1MI2qo00',
+  whatsappPhone: '79810388903',
   whatsappUrl: 'https://wa.me/79810388903',
+  yandexMetrikaId: '',
   schedule: '',
   heroTitle:
     'Покупаем неликвиды, складские остатки и б/у промышленное оборудование',
@@ -118,6 +128,7 @@ export const SITE_CONFIG: SiteConfig = {
       code: 'КАТ. 01',
       title: 'Электродвигатели, радиоприборы, пускатели',
       icon: 'motors',
+      image: '/images/cat-01.jpg',
       placeholder: 'Например: 12 шт. или 1 партия',
     },
     {
@@ -125,6 +136,7 @@ export const SITE_CONFIG: SiteConfig = {
       code: 'КАТ. 02',
       title: 'Подшипники, редукторы',
       icon: 'bearings',
+      image: '/images/cat-02.jpg',
       placeholder: 'Например: 40 шт. или партия со склада',
     },
     {
@@ -132,6 +144,7 @@ export const SITE_CONFIG: SiteConfig = {
       code: 'КАТ. 03',
       title: 'Трансформаторы масляные и сухозаряженные',
       icon: 'transformers',
+      image: '/images/cat-03.jpg',
       placeholder: 'Например: 2 шт., с хранения',
     },
     {
@@ -139,6 +152,7 @@ export const SITE_CONFIG: SiteConfig = {
       code: 'КАТ. 04',
       title: 'Запорная арматура',
       icon: 'valves',
+      image: '/images/cat-04.jpg',
       placeholder: 'Например: 15 шт., партия',
     },
     {
@@ -146,6 +160,7 @@ export const SITE_CONFIG: SiteConfig = {
       code: 'КАТ. 05',
       title: 'Трубы стальные, нержавейка',
       icon: 'pipes',
+      image: '/images/cat-05.jpg',
       placeholder: 'Например: ~5 тонн, разные диаметры',
     },
     {
@@ -153,6 +168,7 @@ export const SITE_CONFIG: SiteConfig = {
       code: 'КАТ. 06',
       title: 'Кабельная продукция',
       icon: 'cables',
+      image: '/images/cat-06.jpg',
       placeholder: 'Например: 3 барабана / 5 бухт',
     },
     {
@@ -160,6 +176,7 @@ export const SITE_CONFIG: SiteConfig = {
       code: 'КАТ. 07',
       title: 'Метизы',
       icon: 'fasteners',
+      image: '/images/cat-07.jpg',
       placeholder: 'Например: ~300 кг / 10 ящиков',
     },
     {
@@ -167,32 +184,32 @@ export const SITE_CONFIG: SiteConfig = {
       code: 'КАТ. 08',
       title: 'Баллоны кислородные, углекислотные, аргон',
       icon: 'cylinders',
+      image: '/images/cat-08.jpg',
       placeholder: 'Например: 20 шт., партия',
     },
   ],
 };
 
-export function deriveContactLinks(phoneDisplay: string): {
-  phoneTel: string;
-  telegramUrl: string;
-  whatsappUrl: string;
-} {
-  const digits = phoneDisplay.replace(/\D/g, '');
-  let normalized = digits;
-
+function normalizePhoneDigits(rawPhone: string): string {
+  const digits = rawPhone.replace(/\D/g, '');
   if (digits.length === 11 && digits.startsWith('8')) {
-    normalized = `7${digits.slice(1)}`;
-  } else if (digits.length === 10) {
-    normalized = `7${digits}`;
-  } else if (digits.length === 0) {
-    normalized = '79810388903';
+    return `7${digits.slice(1)}`;
   }
+  if (digits.length === 10) {
+    return `7${digits}`;
+  }
+  if (digits.length === 0) {
+    return '79810388903';
+  }
+  return digits;
+}
 
-  return {
-    phoneTel: `tel:+${normalized}`,
-    telegramUrl: `https://t.me/+${normalized}`,
-    whatsappUrl: `https://wa.me/${normalized}`,
-  };
+export function derivePhoneTel(phoneDisplay: string): string {
+  return `tel:+${normalizePhoneDigits(phoneDisplay)}`;
+}
+
+export function deriveWhatsAppUrl(whatsappPhone: string): string {
+  return `https://wa.me/${normalizePhoneDigits(whatsappPhone)}`;
 }
 
 const SERIALIZER_TEMPLATE: readonly string[] = [
@@ -212,6 +229,7 @@ const SERIALIZER_TEMPLATE: readonly string[] = [
   "  code: string;",
   "  title: string;",
   "  icon: CategoryIconKey;",
+  "  image: string;",
   "  placeholder: string;",
   "}",
   "",
@@ -234,10 +252,14 @@ const SERIALIZER_TEMPLATE: readonly string[] = [
   "}",
   "",
   "export interface SiteConfig {",
+  "  brandName: string;",
+  "  brandSubtitle: string;",
   "  phoneDisplay: string;",
   "  phoneTel: string;",
-  "  telegramUrl: string;",
+  "  maxUrl: string;",
+  "  whatsappPhone: string;",
   "  whatsappUrl: string;",
+  "  yandexMetrikaId: string;",
   "  schedule: string;",
   "  heroTitle: string;",
   "  guaranteeText: string;",
@@ -251,27 +273,26 @@ const SERIALIZER_TEMPLATE: readonly string[] = [
   "",
   "export const SITE_CONFIG: SiteConfig = __SITE_CONFIG_TOKEN__;",
   "",
-  "export function deriveContactLinks(phoneDisplay: string): {",
-  "  phoneTel: string;",
-  "  telegramUrl: string;",
-  "  whatsappUrl: string;",
-  "} {",
-  "  const digits = phoneDisplay.replace(/\\D/g, '');",
-  "  let normalized = digits;",
-  "",
+  "function normalizePhoneDigits(rawPhone: string): string {",
+  "  const digits = rawPhone.replace(/\\D/g, '');",
   "  if (digits.length === 11 && digits.startsWith('8')) {",
-  "    normalized = `7${digits.slice(1)}`;",
-  "  } else if (digits.length === 10) {",
-  "    normalized = `7${digits}`;",
-  "  } else if (digits.length === 0) {",
-  "    normalized = '79810388903';",
+  "    return `7${digits.slice(1)}`;",
   "  }",
+  "  if (digits.length === 10) {",
+  "    return `7${digits}`;",
+  "  }",
+  "  if (digits.length === 0) {",
+  "    return '79810388903';",
+  "  }",
+  "  return digits;",
+  "}",
   "",
-  "  return {",
-  "    phoneTel: `tel:+${normalized}`,",
-  "    telegramUrl: `https://t.me/+${normalized}`,",
-  "    whatsappUrl: `https://wa.me/${normalized}`,",
-  "  };",
+  "export function derivePhoneTel(phoneDisplay: string): string {",
+  "  return `tel:+${normalizePhoneDigits(phoneDisplay)}`;",
+  "}",
+  "",
+  "export function deriveWhatsAppUrl(whatsappPhone: string): string {",
+  "  return `https://wa.me/${normalizePhoneDigits(whatsappPhone)}`;",
   "}",
   "",
   "const SERIALIZER_TEMPLATE: readonly string[] = __SERIALIZER_TEMPLATE_TOKEN__;",

@@ -19,6 +19,7 @@ export function CatalogGrid({
   onScrollToBuilder,
 }: CatalogGridProps): React.JSX.Element {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [brokenImages, setBrokenImages] = useState<Record<string, boolean>>({});
 
   const selectedMap = new Map(
     selectedPositions.map((pos) => [pos.categoryId, pos]),
@@ -88,57 +89,69 @@ export function CatalogGrid({
         {config.categories.map((cat) => {
           const selected = selectedMap.get(cat.id);
           const isSelected = Boolean(selected);
+          const imageKey = `${cat.id}:${cat.image}`;
+          const showFallback = !cat.image.trim() || Boolean(brokenImages[imageKey]);
 
           return (
             <article
               key={cat.id}
               onClick={() => onOpenModal(cat.id)}
-              className={`group relative h-full min-h-[210px] rounded-xl border p-5 flex flex-col justify-between transition-all cursor-pointer bg-white ${
+              className={`group relative h-full min-h-[280px] rounded-xl border p-4 flex flex-col justify-between transition-all cursor-pointer bg-white ${
                 isSelected
                   ? 'border-[#2563EB] ring-2 ring-[#2563EB]/15 shadow-xs'
                   : 'border-slate-200 hover:border-slate-400 hover:shadow-xs'
               }`}
             >
               <div>
-                <div className="flex items-start justify-between gap-3">
-                  <div
-                    className={`w-12 h-12 rounded-xl flex items-center justify-center border transition-colors ${
-                      isSelected
-                        ? 'bg-[#EFF6FF] border-[#BFDBFE] text-[#2563EB]'
-                        : 'bg-slate-50 border-slate-200 text-[#0F172A] group-hover:border-slate-300 group-hover:text-[#2563EB]'
-                    }`}
-                  >
-                    <CategoryIcon icon={cat.icon} className="w-7 h-7" />
-                  </div>
+                {/* Top category photo with SVG fallback + КАТ. rectangular badge */}
+                <div className="relative">
+                  {showFallback ? (
+                    <div className="w-full h-36 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-[#2563EB]">
+                      <CategoryIcon icon={cat.icon} className="w-12 h-12" />
+                    </div>
+                  ) : (
+                    <img
+                      src={cat.image}
+                      alt={cat.title}
+                      loading="lazy"
+                      onError={() =>
+                        setBrokenImages((prev) => ({
+                          ...prev,
+                          [imageKey]: true,
+                        }))
+                      }
+                      className="w-full h-36 object-cover rounded-lg bg-slate-100"
+                    />
+                  )}
 
                   <span
-                    className={`inline-flex items-center px-2.5 py-1 rounded-md border text-xs font-bold tracking-wider tabular-nums shrink-0 ${
+                    className={`absolute top-2 right-2 inline-flex items-center px-2.5 py-1 rounded-md border text-xs font-bold tracking-wider tabular-nums shadow-2xs ${
                       isSelected
                         ? 'bg-[#2563EB] border-[#2563EB] text-white'
-                        : 'bg-slate-50 border-slate-200 text-slate-600'
+                        : 'bg-white/95 border-slate-200 text-slate-700 backdrop-blur-xs'
                     }`}
                   >
                     {cat.code}
                   </span>
                 </div>
 
-                <h3 className="mt-4 text-base font-bold text-[#0F172A] leading-snug break-words">
+                <h3 className="mt-3.5 text-base font-bold text-[#0F172A] leading-snug break-words">
                   {cat.title}
                 </h3>
 
                 {isSelected && selected?.note.trim() ? (
-                  <div className="mt-2.5 rounded-lg bg-[#EFF6FF] border border-[#BFDBFE]/70 px-2.5 py-1.5 text-xs font-medium text-[#1E40AF] break-words">
+                  <div className="mt-2 rounded-lg bg-[#EFF6FF] border border-[#BFDBFE]/70 px-2.5 py-1.5 text-xs font-medium text-[#1E40AF] break-words">
                     {selected.note}
                   </div>
                 ) : (
-                  <p className="mt-2 text-xs text-slate-500 break-words">
+                  <p className="mt-1.5 text-xs text-slate-500 break-words">
                     {cat.placeholder}
                   </p>
                 )}
               </div>
 
               <div
-                className="mt-5 pt-3.5 border-t border-slate-100 flex items-center justify-between gap-2"
+                className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2"
                 onClick={(e) => e.stopPropagation()}
               >
                 <button

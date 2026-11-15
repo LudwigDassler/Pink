@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Copy, Phone } from 'lucide-react';
 import type { SiteConfig } from '../config/siteConfig';
+import { trackGoal } from '../utils/analytics';
 
 export type TabId = 'main' | 'terms' | 'contacts' | 'legal';
 
@@ -94,6 +95,7 @@ export function Header({
 
   const handleCopyPhone = async (): Promise<void> => {
     await copyTextSafe(config.phoneDisplay);
+    trackGoal('copy_phone');
     showToast('Номер скопирован');
   };
 
@@ -101,14 +103,14 @@ export function Header({
     <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-slate-200 print:hidden">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="h-14 sm:h-16 flex items-center justify-between gap-2">
-          {/* Left: Technical mark + brand title (triple-click activates editor) */}
+          {/* Left: Brand mark + title & desktop subtitle (triple-click activates editor) */}
           <div className="flex items-center min-w-0">
             <a
               href="#main"
               onClick={handleBrandClick}
               className="flex items-center gap-2.5 text-[#0F172A] hover:text-[#2563EB] transition-colors min-w-0 select-none"
             >
-              <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#2563EB] text-white flex items-center justify-center shrink-0">
+              <span className="w-8 h-8 rounded-lg bg-[#2563EB] text-white flex items-center justify-center shrink-0">
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"
@@ -116,7 +118,7 @@ export function Header({
                   strokeWidth="1.8"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="w-4 h-4 sm:w-4.5 sm:h-4.5"
+                  className="w-4.5 h-4.5"
                   aria-hidden="true"
                 >
                   <polygon points="12,3 20,7.5 20,16.5 12,21 4,16.5 4,7.5" />
@@ -124,8 +126,15 @@ export function Header({
                   <line x1="12" y1="12" x2="12" y2="21" />
                 </svg>
               </span>
-              <span className="font-extrabold text-xs sm:text-sm tracking-tight leading-tight truncate">
-                Отдел закупки
+              <span className="flex flex-col min-w-0">
+                <span className="font-extrabold text-sm sm:text-base tracking-tight leading-tight truncate">
+                  {config.brandName}
+                </span>
+                {config.brandSubtitle && (
+                  <span className="hidden lg:block text-[11px] font-medium text-slate-500 leading-tight truncate max-w-[220px] xl:max-w-[260px]">
+                    {config.brandSubtitle}
+                  </span>
+                )}
               </span>
             </a>
           </div>
@@ -167,6 +176,7 @@ export function Header({
           <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
             <a
               href={config.phoneTel}
+              onClick={() => trackGoal('click_phone')}
               className="inline-flex items-center gap-1.5 text-[13px] sm:text-sm lg:text-base font-extrabold text-[#0F172A] hover:text-[#2563EB] transition-colors tabular-nums whitespace-nowrap"
             >
               <Phone className="w-3.5 h-3.5 text-[#2563EB] hidden sm:inline shrink-0" />

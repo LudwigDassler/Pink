@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Check, ChevronDown, Plus, Send, Trash2 } from 'lucide-react';
+import { Check, ChevronDown, Plus, Trash2 } from 'lucide-react';
 import type { SelectedPosition, SiteConfig } from '../config/siteConfig';
 import {
   buildSinglePositionText,
-  dispatchToMessenger,
+  dispatchToMax,
   hasConditionInNote,
   toggleConditionInNote,
 } from '../utils/requestHelpers';
 import { CategoryIcon } from './CategoryIcon';
+import { MaxIcon } from './MessengerIcons';
 
 export interface CategoryModalProps {
   config: SiteConfig;
@@ -155,14 +156,13 @@ export function CategoryModal({
     onClose();
   };
 
-  const handleDirectTelegram = () => {
+  const handleDirectMax = () => {
     const cleanNote = note.trim();
     onSavePosition(category.id, cleanNote);
     const singleText = buildSinglePositionText(category, cleanNote);
-    dispatchToMessenger({
-      baseUrl: config.telegramUrl,
+    dispatchToMax({
+      maxUrl: config.maxUrl,
       text: singleText,
-      toastMessage: 'Текст скопирован — открываем Telegram',
       showToast,
     });
     onClose();
@@ -350,11 +350,11 @@ export function CategoryModal({
 
           <button
             type="button"
-            onClick={handleDirectTelegram}
+            onClick={handleDirectMax}
             className="inline-flex h-12 w-full items-center justify-center gap-2.5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] px-5 text-sm font-bold text-white whitespace-nowrap transition-colors cursor-pointer"
           >
-            <Send className="w-5 h-5 text-white shrink-0" aria-hidden="true" />
-            <span>Отправить по этой позиции в Telegram</span>
+            <MaxIcon className="w-5 h-5 text-white shrink-0" />
+            <span>Отправить в MAX</span>
           </button>
         </div>
       </div>

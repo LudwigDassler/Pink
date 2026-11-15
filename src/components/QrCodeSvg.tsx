@@ -8,21 +8,27 @@ export interface QrCodeSvgProps {
 
 interface QrVersionSpec {
   version: number;
-  dataCodewords: number;
+  blockDataLengths: readonly number[];
   ecCodewordsPerBlock: number;
-  blocks: number;
-  alignmentCenters: number[];
+  alignmentCenters: readonly number[];
 }
 
-// ISO/IEC 18004 ECC Level L specifications (Versions 1-6, up to 134 UTF-8 bytes)
+// ISO/IEC 18004 ECC Level L specifications (Versions 1-10, up to 271 UTF-8 bytes)
 const QR_VERSIONS_L: readonly QrVersionSpec[] = [
-  { version: 1, dataCodewords: 19, ecCodewordsPerBlock: 7, blocks: 1, alignmentCenters: [] },
-  { version: 2, dataCodewords: 34, ecCodewordsPerBlock: 10, blocks: 1, alignmentCenters: [6, 18] },
-  { version: 3, dataCodewords: 55, ecCodewordsPerBlock: 15, blocks: 1, alignmentCenters: [6, 22] },
-  { version: 4, dataCodewords: 80, ecCodewordsPerBlock: 20, blocks: 1, alignmentCenters: [6, 26] },
-  { version: 5, dataCodewords: 108, ecCodewordsPerBlock: 26, blocks: 1, alignmentCenters: [6, 30] },
-  { version: 6, dataCodewords: 136, ecCodewordsPerBlock: 18, blocks: 2, alignmentCenters: [6, 34] },
+  { version: 1, blockDataLengths: [19], ecCodewordsPerBlock: 7, alignmentCenters: [] },
+  { version: 2, blockDataLengths: [34], ecCodewordsPerBlock: 10, alignmentCenters: [6, 18] },
+  { version: 3, blockDataLengths: [55], ecCodewordsPerBlock: 15, alignmentCenters: [6, 22] },
+  { version: 4, blockDataLengths: [80], ecCodewordsPerBlock: 20, alignmentCenters: [6, 26] },
+  { version: 5, blockDataLengths: [108], ecCodewordsPerBlock: 26, alignmentCenters: [6, 30] },
+  { version: 6, blockDataLengths: [68, 68], ecCodewordsPerBlock: 18, alignmentCenters: [6, 34] },
+  { version: 7, blockDataLengths: [78, 78], ecCodewordsPerBlock: 20, alignmentCenters: [6, 22, 38] },
+  { version: 8, blockDataLengths: [97, 97], ecCodewordsPerBlock: 24, alignmentCenters: [6, 24, 42] },
+  { version: 9, blockDataLengths: [116, 116], ecCodewordsPerBlock: 30, alignmentCenters: [6, 26, 46] },
+  { version: 10, blockDataLengths: [68, 68, 69, 69], ecCodewordsPerBlock: 18, alignmentCenters: [6, 28, 50] },
 ];
+
+const DEFAULT_MAX_URL =
+  'https://max.ru/u/f9LHodD0cOJQ3IGdRdY7kD3F2ODJYP4Vx4bpsa_IwEiUTGgnbAa1MI2qo00';
 
 const GF_EXP = new Uint8Array(512);
 const GF_LOG = new Uint8Array(256);
@@ -84,14 +90,12 @@ function writeFormatBits(matrix: boolean[][], size: number, mask: number): void 
   const bits = ((formatData << 10) | rem) ^ 0x5412;
   const bit = (idx: number): boolean => ((bits >> idx) & 1) === 1;
 
-  // Top-left copy
   const tlRows = [8, 8, 8, 8, 8, 8, 8, 8, 7, 5, 4, 3, 2, 1, 0];
   const tlCols = [0, 1, 2, 3, 4, 5, 7, 8, 8, 8, 8, 8, 8, 8, 8];
   for (let i = 0; i < 15; i += 1) {
     matrix[tlRows[i]][tlCols[i]] = bit(14 - i);
   }
 
-  // Bottom-left + Top-right split copy
   for (let i = 0; i < 7; i += 1) {
     matrix[size - 1 - i][8] = bit(14 - i);
   }
@@ -163,17 +167,22 @@ function scorePenalty(matrix: boolean[][]): number {
   return penalty;
 }
 
+function maxByteCapacity(spec: QrVersionSpec): number {
+  const totalDataCodewords = spec.blockDataLengths.reduce((acc, n) => acc + n, 0);
+  // 4-bit mode + (8-bit length for V1-9, 16-bit length for V10+)
+  const headerOverheadBytes = spec.version <= 9 ? 2 : 3;
+  return totalDataCodewords - headerOverheadBytes;
+}
+
 export function generateQrMatrix(text: string): boolean[][] {
   const payload = new TextEncoder().encode(text);
-  // Byte mode overhead: 4-bit mode + 8-bit length = 12 bits -> max dataCodewords - 2 bytes
   const spec =
-    QR_VERSIONS_L.find((s) => payload.length <= s.dataCodewords - 2) ??
+    QR_VERSIONS_L.find((s) => payload.length <= maxByteCapacity(s)) ??
     QR_VERSIONS_L[QR_VERSIONS_L.length - 1];
 
-  const safePayload =
-    payload.length <= spec.dataCodewords - 2
-      ? payload
-      : payload.slice(0, spec.dataCodewords - 2);
+  const cap = maxByteCapacity(spec);
+  const safePayload = payload.length <= cap ? payload : payload.slice(0, cap);
+  const totalDataCodewords = spec.blockDataLengths.reduce((acc, n) => acc + n, 0);
 
   const bits: number[] = [];
   const pushBits = (val: number, len: number): void => {
@@ -184,19 +193,19 @@ export function generateQrMatrix(text: string): boolean[][] {
 
   // Byte mode = 0100
   pushBits(0b0100, 4);
-  pushBits(safePayload.length, 8);
+  pushBits(safePayload.length, spec.version <= 9 ? 8 : 16);
   for (const byte of safePayload) {
     pushBits(byte, 8);
   }
 
-  const maxDataBits = spec.dataCodewords * 8;
+  const maxDataBits = totalDataCodewords * 8;
   const terminatorLen = Math.min(4, maxDataBits - bits.length);
   pushBits(0, terminatorLen);
   while (bits.length % 8 !== 0) {
     bits.push(0);
   }
 
-  const dataBytes = new Uint8Array(spec.dataCodewords);
+  const dataBytes = new Uint8Array(totalDataCodewords);
   for (let i = 0; i < bits.length / 8; i += 1) {
     let b = 0;
     for (let j = 0; j < 8; j += 1) {
@@ -206,28 +215,32 @@ export function generateQrMatrix(text: string): boolean[][] {
   }
 
   const padBytes = [0xec, 0x11];
-  for (let i = bits.length / 8, p = 0; i < spec.dataCodewords; i += 1, p += 1) {
+  for (let i = bits.length / 8, p = 0; i < totalDataCodewords; i += 1, p += 1) {
     dataBytes[i] = padBytes[p % 2];
   }
 
-  // Split into blocks & interleave (1 block for V1-V5, 2 equal blocks for V6)
-  const blockLen = spec.dataCodewords / spec.blocks;
+  // Split into blocks & interleave (supports equal & unequal blocks, e.g. V10 [68,68,69,69])
   const dataBlocks: Uint8Array[] = [];
   const ecBlocks: Uint8Array[] = [];
-  for (let b = 0; b < spec.blocks; b += 1) {
-    const slice = dataBytes.slice(b * blockLen, (b + 1) * blockLen);
+  let offset = 0;
+  for (const blockLen of spec.blockDataLengths) {
+    const slice = dataBytes.slice(offset, offset + blockLen);
+    offset += blockLen;
     dataBlocks.push(slice);
     ecBlocks.push(computeReedSolomon(slice, spec.ecCodewordsPerBlock));
   }
 
   const allCodewords: number[] = [];
-  for (let i = 0; i < blockLen; i += 1) {
-    for (let b = 0; b < spec.blocks; b += 1) {
-      allCodewords.push(dataBlocks[b][i]);
+  const maxBlockLen = Math.max(...spec.blockDataLengths);
+  for (let i = 0; i < maxBlockLen; i += 1) {
+    for (let b = 0; b < dataBlocks.length; b += 1) {
+      if (i < dataBlocks[b].length) {
+        allCodewords.push(dataBlocks[b][i]);
+      }
     }
   }
   for (let i = 0; i < spec.ecCodewordsPerBlock; i += 1) {
-    for (let b = 0; b < spec.blocks; b += 1) {
+    for (let b = 0; b < ecBlocks.length; b += 1) {
       allCodewords.push(ecBlocks[b][i]);
     }
   }
@@ -288,6 +301,24 @@ export function generateQrMatrix(text: string): boolean[][] {
     if (!isFunc[i][6]) setFunctionModule(i, 6, i % 2 === 0);
   }
 
+  // Version information blocks (ISO/IEC 18004 Section 7.10, Versions >= 7)
+  if (spec.version >= 7) {
+    let rem = spec.version << 12;
+    for (let i = 17; i >= 12; i -= 1) {
+      if (((rem >> i) & 1) !== 0) {
+        rem ^= 0x1f25 << (i - 12);
+      }
+    }
+    const versionBits = (spec.version << 12) | rem;
+    for (let i = 0; i < 18; i += 1) {
+      const dark = ((versionBits >> i) & 1) === 1;
+      const a = Math.floor(i / 3);
+      const b = (i % 3) + size - 11;
+      setFunctionModule(a, b, dark);
+      setFunctionModule(b, a, dark);
+    }
+  }
+
   // Dark module + reserved format info slots
   setFunctionModule(size - 8, 8, true);
   for (let i = 0; i < 9; i += 1) {
@@ -337,11 +368,11 @@ export function generateQrMatrix(text: string): boolean[][] {
 }
 
 export function QrCodeSvg({
-  url = 'https://t.me/+79810388903',
+  url = DEFAULT_MAX_URL,
   size = 164,
   className = '',
 }: QrCodeSvgProps): React.JSX.Element {
-  const safeUrl = url.trim() || 'https://t.me/+79810388903';
+  const safeUrl = url.trim() || DEFAULT_MAX_URL;
   const matrix = useMemo(() => generateQrMatrix(safeUrl), [safeUrl]);
   const quietZone = 3;
   const totalModules = matrix.length + quietZone * 2;
@@ -365,7 +396,7 @@ export function QrCodeSvg({
       viewBox={`0 0 ${totalModules} ${totalModules}`}
       shapeRendering="crispEdges"
       role="img"
-      aria-label={`QR-код для перехода: ${safeUrl}`}
+      aria-label="QR-код для открытия чата MAX"
       className={className}
     >
       <rect width={totalModules} height={totalModules} fill="#FFFFFF" rx="1.5" />
