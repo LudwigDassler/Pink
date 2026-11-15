@@ -21,19 +21,62 @@ import { AdminConfigDrawer } from './components/AdminConfigDrawer';
 
 const POSITIONS_STORAGE_KEY = 'b2b_selected_positions_v1';
 
-function isAdminHash(hash: string): boolean {
-  return hash.replace(/^#/, '').trim().toLowerCase() === 'admin';
+export function normalizeHashToken(hash: string): string {
+  return hash
+    .replace(/^#+/, '')
+    .split('?')[0]
+    .replace(/^\/+/, '')
+    .replace(/\/+$/, '')
+    .trim()
+    .toLowerCase();
+}
+
+export function isAdminHash(hash: string): boolean {
+  return normalizeHashToken(hash) === 'admin';
+}
+
+export function hasEditQueryParam(search: string, hash: string): boolean {
+  if (new URLSearchParams(search).get('edit') === '1') {
+    return true;
+  }
+  const queryIdx = hash.indexOf('?');
+  if (queryIdx !== -1) {
+    return new URLSearchParams(hash.slice(queryIdx + 1)).get('edit') === '1';
+  }
+  return false;
+}
+
+export function buildPreservedSearch(
+  search: string,
+  hash: string,
+  removeEdit = false,
+): string {
+  const params = new URLSearchParams(search);
+  const queryIdx = hash.indexOf('?');
+  if (queryIdx !== -1) {
+    const hashParams = new URLSearchParams(hash.slice(queryIdx + 1));
+    hashParams.forEach((value, key) => {
+      if (!params.has(key)) {
+        params.set(key, value);
+      }
+    });
+  }
+  if (removeEdit) {
+    params.delete('edit');
+  }
+  const serialized = params.toString();
+  return serialized ? `?${serialized}` : '';
 }
 
 function isInitialEditMode(): boolean {
   return (
-    new URLSearchParams(window.location.search).get('edit') === '1' ||
+    hasEditQueryParam(window.location.search, window.location.hash) ||
     isAdminHash(window.location.hash)
   );
 }
 
-function parseHashToTab(hash: string): TabId {
-  const normalized = hash.replace(/^#/, '').trim().toLowerCase();
+export function parseHashToTab(hash: string): TabId {
+  const normalized = normalizeHashToken(hash);
   if (normalized === 'terms') return 'terms';
   if (normalized === 'contacts') return 'contacts';
   if (normalized === 'legal') return 'legal';
@@ -91,8 +134,14 @@ export function App(): React.JSX.Element {
     };
   }, []);
 
+  // Auto-load & initialize Yandex Metrika when yandexMetrikaId is configured
   useEffect(() => {
-    setActiveMetrikaId(config.yandexMetrikaId);
+    const trimmedId = config.yandexMetrikaId.trim();
+    if (trimmedId.length > 0 && /^\d+$/.test(trimmedId)) {
+      setActiveMetrikaId(trimmedId);
+    } else {
+      setActiveMetrikaId('');
+    }
   }, [config.yandexMetrikaId]);
 
   useEffect(() => {
@@ -114,16 +163,19 @@ export function App(): React.JSX.Element {
     });
   }, [config.categories]);
 
-  // Sync SPA hash navigation + /#admin trigger
+  // Sync SPA hash navigation + /#admin & ?edit=1 triggers while preserving UTM / yclid
   useEffect(() => {
     const handleLocationSync = (): void => {
-      if (isAdminHash(window.location.hash)) {
+      const { search, hash } = window.location;
+      if (hasEditQueryParam(search, hash)) {
         setIsEditMode(true);
-        setActiveTab('main');
+      }
+      if (isAdminHash(hash)) {
+        setIsEditMode(true);
         return;
       }
 
-      const nextTab = parseHashToTab(window.location.hash);
+      const nextTab = parseHashToTab(hash);
       setActiveTab((prev) => {
         if (prev !== nextTab) {
           window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -163,8 +215,16 @@ export function App(): React.JSX.Element {
   }, []);
 
   const navigateTab = useCallback((nextTab: TabId): void => {
-    const nextUrl = `${window.location.pathname}${window.location.search}#${nextTab}`;
-    if (window.location.hash !== `#${nextTab}`) {
+    const preservedSearch = buildPreservedSearch(
+      window.location.search,
+      window.location.hash,
+      false,
+    );
+    const nextUrl = `${window.location.pathname}${preservedSearch}#${nextTab}`;
+    if (
+      normalizeHashToken(window.location.hash) !== nextTab ||
+      window.location.hash.includes('?')
+    ) {
       window.history.pushState(null, '', nextUrl);
     }
     setActiveTab(nextTab);
@@ -247,17 +307,19 @@ export function App(): React.JSX.Element {
 
   const handleExitEditMode = useCallback((): void => {
     setIsEditMode(false);
-    const params = new URLSearchParams(window.location.search);
-    const hadEditParam = params.has('edit');
-    if (hadEditParam) {
-      params.delete('edit');
-    }
-    const adminHashActive = isAdminHash(window.location.hash);
-    if (hadEditParam || adminHashActive) {
-      const query = params.toString();
-      const targetHash = adminHashActive ? `#${activeTab}` : window.location.hash;
-      const nextUrl = `${window.location.pathname}${query ? `?${query}` : ''}${targetHash}`;
-      window.history.replaceState(null, '', nextUrl);
+    const { pathname, search, hash } = window.location;
+    const hadEdit = hasEditQueryParam(search, hash);
+    const adminHashActive = isAdminHash(hash);
+    if (hadEdit || adminHashActive || hash.includes('?')) {
+      const cleanedSearch = buildPreservedSearch(search, hash, true);
+      const cleanToken = normalizeHashToken(hash);
+      const targetHash =
+        adminHashActive || !cleanToken ? `#${activeTab}` : `#${cleanToken}`;
+      window.history.replaceState(
+        null,
+        '',
+        `${pathname}${cleanedSearch}${targetHash}`,
+      );
     }
   }, [activeTab]);
 

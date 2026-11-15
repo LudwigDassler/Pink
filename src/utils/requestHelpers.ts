@@ -25,7 +25,7 @@ export function copyTextFallbackSync(text: string): boolean {
   textarea.readOnly = true;
   textarea.setAttribute('aria-hidden', 'true');
   textarea.style.position = 'fixed';
-  textarea.style.top = '-9999px';
+  textarea.style.top = '0';
   textarea.style.left = '-9999px';
   textarea.style.opacity = '0';
 
@@ -55,12 +55,11 @@ export async function copyTextToClipboard(text: string): Promise<boolean> {
 }
 
 function copyTextImmediate(text: string): void {
+  copyTextFallbackSync(text);
   if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
     navigator.clipboard.writeText(text).catch(() => {
       copyTextFallbackSync(text);
     });
-  } else {
-    copyTextFallbackSync(text);
   }
 }
 

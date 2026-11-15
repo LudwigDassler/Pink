@@ -21,30 +21,40 @@ const NAV_TABS: readonly { id: TabId; label: string }[] = [
   { id: 'legal', label: 'Правовая информация' },
 ];
 
-export async function copyTextSafe(text: string): Promise<boolean> {
+function copyTextFallback(text: string): boolean {
+  let textarea: HTMLTextAreaElement | null = null;
   try {
-    if (navigator.clipboard && window.isSecureContext) {
-      await navigator.clipboard.writeText(text);
-      return true;
-    }
-  } catch {
-    // Fallback below
-  }
-
-  try {
-    const textarea = document.createElement('textarea');
+    textarea = document.createElement('textarea');
     textarea.value = text;
-    textarea.setAttribute('readonly', 'true');
+    textarea.setAttribute('readonly', '');
     textarea.style.position = 'fixed';
+    textarea.style.top = '0';
+    textarea.style.left = '-9999px';
     textarea.style.opacity = '0';
     textarea.style.pointerEvents = 'none';
     document.body.appendChild(textarea);
+    textarea.focus();
     textarea.select();
-    const ok = document.execCommand('copy');
-    document.body.removeChild(textarea);
-    return ok;
+    textarea.setSelectionRange(0, text.length);
+    return document.execCommand('copy');
   } catch {
     return false;
+  } finally {
+    if (textarea && textarea.parentNode) {
+      textarea.parentNode.removeChild(textarea);
+    }
+  }
+}
+
+export async function copyTextSafe(text: string): Promise<boolean> {
+  try {
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+    return copyTextFallback(text);
+  } catch {
+    return copyTextFallback(text);
   }
 }
 

@@ -18,6 +18,7 @@ interface YMFunction {
 declare global {
   interface Window {
     ym?: YMFunction;
+    __promvykupYmInit?: Record<number, true>;
     Ya?: {
       _metrika?: {
         counters?:
@@ -37,11 +38,11 @@ function parseCounterId(raw?: string | number | null): number | null {
     return null;
   }
   const trimmed = String(raw).trim();
-  if (!/^\d{4,15}$/.test(trimmed)) {
+  if (trimmed.length === 0 || !/^\d+$/.test(trimmed)) {
     return null;
   }
-  const numeric = Number(trimmed);
-  return Number.isSafeInteger(numeric) && numeric > 0 ? numeric : null;
+  const counterId = Number(trimmed);
+  return Number.isSafeInteger(counterId) && counterId > 0 ? counterId : null;
 }
 
 function detectDomCounterId(): number | null {
@@ -104,25 +105,34 @@ function ensureMetrikaBootstrap(counterId: number): void {
       };
       ymQueue.l = Date.now();
       window.ym = ymQueue;
-
-      const existingScript = document.querySelector(
-        'script[src*="mc.yandex.ru/metrika/tag.js"]',
-      );
-      if (!existingScript && document.head) {
-        const script = document.createElement('script');
-        script.async = true;
-        script.src = 'https://mc.yandex.ru/metrika/tag.js';
-        document.head.appendChild(script);
-      }
     }
 
-    if (!initializedCounterIds.has(counterId)) {
+    const existingScript = document.querySelector(
+      'script[src*="mc.yandex.ru/metrika/tag.js"]',
+    );
+    if (!existingScript) {
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = 'https://mc.yandex.ru/metrika/tag.js';
+      const target = document.head ?? document.documentElement;
+      target?.appendChild(script);
+    }
+
+    const winInitMap = (window.__promvykupYmInit =
+      window.__promvykupYmInit ?? {});
+
+    if (!initializedCounterIds.has(counterId) && !winInitMap[counterId]) {
       initializedCounterIds.add(counterId);
+      winInitMap[counterId] = true;
       window.ym(counterId, 'init', {
         clickmap: true,
         trackLinks: true,
         accurateTrackBounce: true,
+        webvisor: true,
       });
+    } else {
+      initializedCounterIds.add(counterId);
+      winInitMap[counterId] = true;
     }
   } catch {
     // Never throw from analytics bootstrap
@@ -130,10 +140,15 @@ function ensureMetrikaBootstrap(counterId: number): void {
 }
 
 export function setActiveMetrikaId(id: string): void {
-  const parsed = parseCounterId(id);
-  activeMetrikaId = parsed;
-  if (parsed !== null) {
-    ensureMetrikaBootstrap(parsed);
+  const trimmed = id.trim();
+  if (trimmed.length === 0 || !/^\d+$/.test(trimmed)) {
+    activeMetrikaId = null;
+    return;
+  }
+  const counterId = parseCounterId(trimmed);
+  activeMetrikaId = counterId;
+  if (counterId !== null) {
+    ensureMetrikaBootstrap(counterId);
   }
 }
 

@@ -1,5 +1,13 @@
-import React from 'react';
-import { Copy, LogOut, RotateCcw, Settings2, Trash2 } from 'lucide-react';
+import React, { useEffect, useRef } from 'react';
+import {
+  Copy,
+  Download,
+  Info,
+  LogOut,
+  RotateCcw,
+  Settings2,
+  Trash2,
+} from 'lucide-react';
 import {
   derivePhoneTel,
   deriveWhatsAppUrl,
@@ -26,6 +34,22 @@ export function AdminConfigDrawer({
   onExitEditMode,
   showToast,
 }: AdminConfigDrawerProps): React.JSX.Element | null {
+  const revokeTimerRef = useRef<number | null>(null);
+  const activeObjectUrlRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (revokeTimerRef.current !== null) {
+        window.clearTimeout(revokeTimerRef.current);
+        revokeTimerRef.current = null;
+      }
+      if (activeObjectUrlRef.current) {
+        URL.revokeObjectURL(activeObjectUrlRef.current);
+        activeObjectUrlRef.current = null;
+      }
+    };
+  }, []);
+
   if (!isOpen) {
     return null;
   }
@@ -114,6 +138,45 @@ export function AdminConfigDrawer({
     }
   };
 
+  const handleDownloadConfigFile = () => {
+    if (typeof document === 'undefined' || typeof URL === 'undefined') {
+      return;
+    }
+
+    const tsFileSource = serializeSiteConfigToTs(config);
+    const blob = new Blob([tsFileSource], {
+      type: 'text/typescript;charset=utf-8',
+    });
+    const objectUrl = URL.createObjectURL(blob);
+
+    if (revokeTimerRef.current !== null) {
+      window.clearTimeout(revokeTimerRef.current);
+      revokeTimerRef.current = null;
+    }
+    if (activeObjectUrlRef.current) {
+      URL.revokeObjectURL(activeObjectUrlRef.current);
+    }
+    activeObjectUrlRef.current = objectUrl;
+
+    const anchor = document.createElement('a');
+    anchor.href = objectUrl;
+    anchor.download = 'siteConfig.ts';
+    anchor.style.display = 'none';
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+
+    revokeTimerRef.current = window.setTimeout(() => {
+      if (activeObjectUrlRef.current === objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+        activeObjectUrlRef.current = null;
+      }
+      revokeTimerRef.current = null;
+    }, 1500);
+
+    showToast('Файл siteConfig.ts скачан');
+  };
+
   const handleResetClick = () => {
     onResetDefault();
     showToast('Настройки сброшены к значениям по умолчанию');
@@ -148,6 +211,19 @@ export function AdminConfigDrawer({
 
       {/* Scrollable Editor Body */}
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 bg-slate-50">
+        {/* Preview Mode Notice */}
+        <div className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50/70 p-3.5 text-xs sm:text-sm leading-relaxed text-slate-800">
+          <Info
+            className="mt-0.5 h-4 w-4 shrink-0 text-[#2563EB]"
+            aria-hidden="true"
+          />
+          <p>
+            Изменения на экране работают как предпросмотр. Чтобы применить их на
+            сайте для всех посетителей, скачайте готовый файл siteConfig.ts и
+            замените его в репозитории.
+          </p>
+        </div>
+
         {/* 1. Brand Name & Subtitle + Hero Title */}
         <section className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 space-y-3.5">
           <div>
@@ -382,16 +458,33 @@ export function AdminConfigDrawer({
         </section>
       </div>
 
-      {/* Sticky Footer Actions */}
+      {/* Sticky Footer Actions: Side-by-Side Copy & Blob Download */}
       <div className="border-t border-slate-200 bg-white px-4 py-3.5 sm:px-6 pb-[max(0.875rem,env(safe-area-inset-bottom))] space-y-2.5">
-        <button
-          type="button"
-          onClick={handleCopyFullConfig}
-          className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#2563EB] px-5 text-sm font-bold text-white whitespace-nowrap transition-colors hover:bg-[#1D4ED8] cursor-pointer"
-        >
-          <Copy className="h-4 w-4 shrink-0 text-white" aria-hidden="true" />
-          <span>Скопировать готовый конфиг для GitHub</span>
-        </button>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <button
+            type="button"
+            onClick={handleCopyFullConfig}
+            className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-[#0F172A] whitespace-nowrap transition-colors hover:border-[#2563EB] hover:text-[#2563EB] cursor-pointer"
+          >
+            <Copy
+              className="h-4 w-4 shrink-0 text-[#2563EB]"
+              aria-hidden="true"
+            />
+            <span>Скопировать конфиг</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleDownloadConfigFile}
+            className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#2563EB] px-4 text-sm font-bold text-white whitespace-nowrap transition-colors hover:bg-[#1D4ED8] cursor-pointer"
+          >
+            <Download
+              className="h-4 w-4 shrink-0 text-white"
+              aria-hidden="true"
+            />
+            <span>Скачать siteConfig.ts</span>
+          </button>
+        </div>
 
         <div className="flex items-center justify-between gap-2">
           <button
