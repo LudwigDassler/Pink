@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import {
   Copy,
   Download,
-  Info,
   LogOut,
   RotateCcw,
   Settings2,
@@ -185,7 +184,7 @@ export function AdminConfigDrawer({
   return (
     <aside
       aria-label="Панель настройки сайта"
-      className="fixed inset-y-0 right-0 z-50 flex w-full max-w-lg flex-col border-l border-slate-200 bg-white shadow-2xl print:hidden"
+      className="fixed inset-y-0 right-0 z-50 flex w-full max-w-xl flex-col border-l border-slate-200 bg-white shadow-2xl print:hidden"
     >
       {/* Header */}
       <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-[#0F172A] px-4 py-3.5 sm:px-6 text-white">
@@ -211,19 +210,6 @@ export function AdminConfigDrawer({
 
       {/* Scrollable Editor Body */}
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 bg-slate-50">
-        {/* Preview Mode Notice */}
-        <div className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50/70 p-3.5 text-xs sm:text-sm leading-relaxed text-slate-800">
-          <Info
-            className="mt-0.5 h-4 w-4 shrink-0 text-[#2563EB]"
-            aria-hidden="true"
-          />
-          <p>
-            Изменения на экране работают как предпросмотр. Чтобы применить их на
-            сайте для всех посетителей, скачайте готовый файл siteConfig.ts и
-            замените его в репозитории.
-          </p>
-        </div>
-
         {/* 1. Brand Name & Subtitle + Hero Title */}
         <section className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 space-y-3.5">
           <div>
@@ -458,28 +444,32 @@ export function AdminConfigDrawer({
         </section>
       </div>
 
-      {/* Sticky Footer Actions: Side-by-Side Copy & Blob Download */}
+      {/* Sticky Footer Actions: Amvera Hint + Side-by-Side Copy & Blob Download */}
       <div className="border-t border-slate-200 bg-white px-4 py-3.5 sm:px-6 pb-[max(0.875rem,env(safe-area-inset-bottom))] space-y-2.5">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        <p className="text-xs text-slate-600 leading-relaxed">
+          Изменения на экране работают как предпросмотр. Чтобы обновить сайт для всех, замените файл src/config/siteConfig.ts в разделе «Репозиторий» на Amvera
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-2.5">
           <button
             type="button"
             onClick={handleCopyFullConfig}
-            className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-[#0F172A] whitespace-nowrap transition-colors hover:border-[#2563EB] hover:text-[#2563EB] cursor-pointer"
+            className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#2563EB] px-4 text-xs sm:text-sm font-bold text-white whitespace-nowrap transition-colors hover:bg-[#1D4ED8] cursor-pointer"
           >
             <Copy
-              className="h-4 w-4 shrink-0 text-[#2563EB]"
+              className="h-4 w-4 shrink-0 text-white"
               aria-hidden="true"
             />
-            <span>Скопировать конфиг</span>
+            <span>Скопировать настройки (siteConfig.ts)</span>
           </button>
 
           <button
             type="button"
             onClick={handleDownloadConfigFile}
-            className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#2563EB] px-4 text-sm font-bold text-white whitespace-nowrap transition-colors hover:bg-[#1D4ED8] cursor-pointer"
+            className="inline-flex h-12 sm:shrink-0 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs sm:text-sm font-bold text-[#0F172A] whitespace-nowrap transition-colors hover:border-[#2563EB] hover:text-[#2563EB] cursor-pointer"
           >
             <Download
-              className="h-4 w-4 shrink-0 text-white"
+              className="h-4 w-4 shrink-0 text-[#2563EB]"
               aria-hidden="true"
             />
             <span>Скачать siteConfig.ts</span>
